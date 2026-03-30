@@ -20,7 +20,7 @@ function FolderItem({
   level?: number;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const hasChildren = folder.children && folder.children.length > 0;
+  const hasChildren = folder.subfolders && folder.subfolders.length > 0;
   const isSelected = selectedId === folder.id;
 
   return (
@@ -57,11 +57,11 @@ function FolderItem({
           <FolderIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         )}
         <span className="truncate">{folder.name}</span>
-        <span className="ml-auto text-xs text-muted-foreground">{folder.documentCount}</span>
+        <span className="ml-auto text-xs text-muted-foreground">{folder.documentCount || 0}</span>
       </button>
       {hasChildren && expanded && (
         <div>
-          {folder.children!.map((child) => (
+          {folder.subfolders!.map((child) => (
             <FolderItem
               key={child.id}
               folder={child}

@@ -20,8 +20,41 @@ async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_
     await db.refresh(db_folder)
     return success_response(db_folder)
 
+from sqlalchemy.orm import selectinload
+from app.schemas.folder import FolderResponse, FolderCreate, FolderUpdate, FolderTreeResponse, BreadcrumbItem
+
+@router.get("/tree", response_model=APIResponse[List[FolderTreeResponse]])
+async def get_folder_tree(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Select root folders and eagerly load their children
+    result = await db.execute(
+        select(Folder)
+        .where(Folder.parent_id == None)
+        .options(selectinload(Folder.subfolders))
+    )
+    folders = result.scalars().all()
+    return success_response(list(folders))
+
+@router.get("/{id}/breadcrumb", response_model=APIResponse[List[BreadcrumbItem]])
+async def get_folder_breadcrumb(id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    breadcrumb = []
+    current_id = id
+    
+    while current_id:
+        folder = await db.get(Folder, current_id)
+        if not folder:
+            break
+        breadcrumb.insert(0, {"id": folder.id, "name": folder.name})
+        current_id = folder.parent_id
+        
+    return success_response(breadcrumb)
+
 @router.get("", response_model=APIResponse[List[FolderResponse]])
 async def get_folders(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    result = await db.execute(select(Folder).where(Folder.parent_id == None))
+    # Select root folders and eagerly load their children
+    result = await db.execute(
+        select(Folder)
+        .where(Folder.parent_id == None)
+        .options(selectinload(Folder.subfolders))
+    )
     folders = result.scalars().all()
     return success_response(list(folders))

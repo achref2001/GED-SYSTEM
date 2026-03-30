@@ -27,7 +27,29 @@ class DocumentResponse(DocumentBase):
     status: str
     current_version: int
 
+    file_hash: Optional[str] = None
+    hash_algorithm: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    expiry_action: str
+    expiry_notified_at: Optional[datetime] = None
+    is_archived: bool
+    archived_at: Optional[datetime] = None
+    archived_by: Optional[str] = None
+    archive_reason: Optional[str] = None
+    is_locked: bool
+    locked_by_id: Optional[int] = None
+    locked_at: Optional[datetime] = None
+    lock_expires_at: Optional[datetime] = None
+    lock_reason: Optional[str] = None
+
     model_config = ConfigDict(from_attributes=True)
+
+class DuplicateCheckRequest(BaseModel):
+    file_hash: str
+
+class DuplicateCheckResponse(BaseModel):
+    is_duplicate: bool
+    existing_document: Optional[DocumentResponse] = None
 
 class DocumentVersionResponse(BaseModel):
     id: int

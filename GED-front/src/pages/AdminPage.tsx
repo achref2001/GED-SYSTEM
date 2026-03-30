@@ -30,15 +30,15 @@ export default function AdminPage() {
   const [searchUsers, setSearchUsers] = useState('');
   const [searchAudit, setSearchAudit] = useState('');
 
-  const filteredUsers = mockData.users.filter((u) =>
+  const filteredUsers = (mockData.users || []).filter((u) =>
     u.fullName.toLowerCase().includes(searchUsers.toLowerCase()) ||
     u.email.toLowerCase().includes(searchUsers.toLowerCase())
   );
 
-  const filteredAudit = mockData.auditLog.filter((e) =>
-    e.entityName.toLowerCase().includes(searchAudit.toLowerCase()) ||
-    e.userName.toLowerCase().includes(searchAudit.toLowerCase()) ||
-    e.action.toLowerCase().includes(searchAudit.toLowerCase())
+  const filteredAudit = (mockData.auditLog || []).filter((e) =>
+    e.entityName?.toLowerCase().includes(searchAudit.toLowerCase()) ||
+    e.userName?.toLowerCase().includes(searchAudit.toLowerCase()) ||
+    e.action?.toLowerCase().includes(searchAudit.toLowerCase())
   );
 
   return (

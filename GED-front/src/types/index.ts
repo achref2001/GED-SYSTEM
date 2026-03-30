@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'manager' | 'user' | 'viewer';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'USER';
 
 export interface User {
   id: string;
@@ -47,12 +47,12 @@ export interface GedDocument {
 export interface Folder {
   id: string;
   name: string;
-  parentId: string | null;
+  parentId: string | number | null;
   createdAt: string;
   updatedAt: string;
-  createdBy: User;
-  children?: Folder[];
-  documentCount: number;
+  createdBy?: User;
+  subfolders?: Folder[];
+  documentCount?: number;
 }
 
 export interface Permission {

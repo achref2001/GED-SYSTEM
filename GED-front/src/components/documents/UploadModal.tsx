@@ -5,25 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Upload, X, FileText, CheckCircle } from 'lucide-react';
+import { Upload, X, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import { formatFileSize } from '@/lib/helpers';
+import { documents as documentApi } from '@/lib/api';
+import { useAppStore } from '@/stores/appStore';
+import { toast } from 'sonner';
 
 interface UploadModalProps {
   open: boolean;
   onClose: () => void;
+  onUploadSuccess?: () => void;
 }
 
 interface UploadFile {
   file: File;
   progress: number;
   status: 'pending' | 'uploading' | 'done' | 'error';
+  errorMessage?: string;
 }
 
-export function UploadModal({ open, onClose }: UploadModalProps) {
+export function UploadModal({ open, onClose, onUploadSuccess }: UploadModalProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [tags, setTags] = useState('');
+  const { selectedFolderId } = useAppStore();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
       progress: 0,
@@ -31,29 +37,39 @@ export function UploadModal({ open, onClose }: UploadModalProps) {
     }));
     setFiles((prev) => [...prev, ...newFiles]);
 
-    // Simulate upload for each file
-    newFiles.forEach((uf, idx) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 25;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
+    // Process uploads
+    for (const uf of newFiles) {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.file === uf.file ? { ...f, progress: 10, status: 'uploading' } : f
+        )
+      );
+
+      try {
+        const folderIdStr = selectedFolderId ? parseInt(selectedFolderId) : undefined;
+        const res = await documentApi.upload(uf.file, folderIdStr);
+        
+        if (res.success) {
           setFiles((prev) =>
             prev.map((f) =>
               f.file === uf.file ? { ...f, progress: 100, status: 'done' } : f
             )
           );
+          if (onUploadSuccess) onUploadSuccess();
         } else {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.file === uf.file ? { ...f, progress, status: 'uploading' } : f
-            )
-          );
+          throw new Error(res.message || 'Upload failed');
         }
-      }, 300 + idx * 100);
-    });
-  }, []);
+      } catch (err: any) {
+        console.error('Upload error:', err);
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.file === uf.file ? { ...f, status: 'error', errorMessage: err.message } : f
+          )
+        );
+        toast.error(`Échec du téléversement de ${uf.file.name}`);
+      }
+    }
+  }, [selectedFolderId, onUploadSuccess]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -97,7 +113,9 @@ export function UploadModal({ open, onClose }: UploadModalProps) {
               <div key={uf.file.name} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   {uf.status === 'done' ? (
-                    <CheckCircle className="w-4 h-4 text-success" />
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : uf.status === 'error' ? (
+                    <AlertTriangle className="w-4 h-4 text-destructive" />
                   ) : (
                     <FileText className="w-4 h-4 text-primary" />
                   )}

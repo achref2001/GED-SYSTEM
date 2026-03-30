@@ -23,6 +23,12 @@ class FolderResponse(FolderBase):
     model_config = ConfigDict(from_attributes=True)
 
 class FolderTreeResponse(FolderResponse):
-    subfolders: List['FolderTreeResponse'] = []
+    subfolders: Optional[List['FolderTreeResponse']] = []
     
+    model_config = ConfigDict(from_attributes=True)
+
+class BreadcrumbItem(BaseModel):
+    id: int
+    name: str
+
     model_config = ConfigDict(from_attributes=True)

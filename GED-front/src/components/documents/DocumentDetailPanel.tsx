@@ -119,20 +119,21 @@ export function DocumentDetailPanel({ document: doc, onClose }: DocumentDetailPa
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              <InfoItem icon={User} label="Auteur" value={doc.createdBy.fullName} />
+              <InfoItem icon={User} label="Auteur" value={doc.createdBy?.fullName || 'Inconnu'} />
               <InfoItem icon={Clock} label="Créé le" value={formatDateTime(doc.createdAt)} />
               <InfoItem icon={Clock} label="Modifié le" value={formatDateTime(doc.updatedAt)} />
-              <InfoItem icon={History} label="Version" value={`v${doc.version}`} />
+              <InfoItem icon={History} label="Version" value={`v${doc.version || 1}`} />
             </div>
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">Tags</p>
               <div className="flex flex-wrap gap-1.5">
-                {doc.tags.map((tag) => (
+                {(doc.tags || []).map((tag) => (
                   <Badge key={tag} variant="secondary" className="text-xs">
                     <Tag className="w-3 h-3 mr-1" />
                     {tag}
                   </Badge>
                 ))}
+                {(!doc.tags || doc.tags.length === 0) && <p className="text-xs text-muted-foreground">Aucun tag</p>}
               </div>
             </div>
           </div>
@@ -140,7 +141,7 @@ export function DocumentDetailPanel({ document: doc, onClose }: DocumentDetailPa
 
         {activeTab === 'versions' && (
           <div className="space-y-3">
-            {versions.length > 0 ? versions.map((v) => (
+            {(versions || []).length > 0 ? versions.map((v) => (
               <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
                   v{v.version}
@@ -148,7 +149,7 @@ export function DocumentDetailPanel({ document: doc, onClose }: DocumentDetailPa
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">{v.changelog || 'Pas de description'}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {v.uploadedBy.fullName} · {formatDateTime(v.uploadedAt)}
+                    {v.uploadedBy?.fullName || 'Utilisateur'} · {formatDateTime(v.uploadedAt)}
                   </p>
                 </div>
                 {v.version < doc.version && (
@@ -165,7 +166,7 @@ export function DocumentDetailPanel({ document: doc, onClose }: DocumentDetailPa
 
         {activeTab === 'comments' && (
           <div className="space-y-3">
-            {comments.map((c) => (
+            {(comments || []).map((c) => (
               <div key={c.id} className="p-3 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -177,7 +178,7 @@ export function DocumentDetailPanel({ document: doc, onClose }: DocumentDetailPa
                 <p className="text-sm text-foreground ml-8">{c.content}</p>
               </div>
             ))}
-            {comments.length === 0 && (
+            {(!comments || comments.length === 0) && (
               <p className="text-sm text-muted-foreground text-center py-4">Aucun commentaire</p>
             )}
           </div>

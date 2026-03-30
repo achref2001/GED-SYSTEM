@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { mockData } from '@/data/mockData';
+import { useEffect, useState } from 'react';
+import { folders as folderApi, documents as documentApi } from '@/lib/api';
+import type { Folder, GedDocument } from '@/types';
 import { useAppStore } from '@/stores/appStore';
 import { FolderTree } from '@/components/documents/FolderTree';
 import { DocumentGrid } from '@/components/documents/DocumentGrid';
@@ -7,49 +8,99 @@ import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentDetailPanel } from '@/components/documents/DocumentDetailPanel';
 import { UploadModal } from '@/components/documents/UploadModal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { AnimatePresence } from 'framer-motion';
 import {
-  Upload, LayoutGrid, List, ChevronRight, Home, FolderOpen,
+  Upload, LayoutGrid, List, ChevronRight, Home, FolderOpen, FolderPlus,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function DocumentsPage() {
   const { viewMode, setViewMode, selectedFolderId, setSelectedFolder, detailPanelOpen, selectedDocumentId, openDetailPanel, closeDetailPanel } = useAppStore();
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [documents, setDocuments] = useState<GedDocument[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const documents = selectedFolderId
-    ? mockData.documents.filter((d) => d.folderId === selectedFolderId)
-    : mockData.documents;
+  useEffect(() => {
+    fetchFolders();
+  }, []);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [selectedFolderId]);
+
+  const fetchFolders = async () => {
+    try {
+      const res = await folderApi.getAll();
+      if (res.success) setFolders(res.data);
+    } catch (err) {
+      console.error('Error fetching folders:', err);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    setLoading(true);
+    try {
+      const parentId = selectedFolderId ? parseInt(selectedFolderId) : undefined;
+      const res = await documentApi.getAll(parentId);
+      if (res.success) setDocuments(res.data);
+    } catch (err) {
+      console.error('Error fetching documents:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateFolder = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newFolderName.trim()) return;
+    try {
+      const parentIdNum = selectedFolderId ? parseInt(selectedFolderId) : null;
+      const res = await folderApi.create(newFolderName, parentIdNum);
+      if (res.success) {
+        setNewFolderName('');
+        setCreateFolderOpen(false);
+        fetchFolders();
+        toast.success('Dossier créé avec succès');
+      }
+    } catch (err) {
+      console.error('Error creating folder:', err);
+      toast.error('Erreur lors de la création du dossier');
+    }
+  };
 
   const selectedDocument = selectedDocumentId
-    ? mockData.documents.find((d) => d.id === selectedDocumentId)
+    ? documents.find((d) => d.id === selectedDocumentId)
     : null;
 
   // Build breadcrumb
   const getBreadcrumb = () => {
     if (!selectedFolderId) return [{ id: null, name: 'Tous les documents' }];
     const crumbs: { id: string | null; name: string }[] = [{ id: null, name: 'Documents' }];
-    const findFolder = (folders: typeof mockData.folders, targetId: string): boolean => {
-      for (const f of folders) {
-        if (f.id === targetId) {
-          if (f.parentId) {
-            findFolder(mockData.folders, f.parentId);
-          }
-          crumbs.push({ id: f.id, name: f.name });
-          return true;
-        }
-        if (f.children) {
-          for (const child of f.children) {
-            if (child.id === targetId) {
-              crumbs.push({ id: f.id, name: f.name });
-              crumbs.push({ id: child.id, name: child.name });
-              return true;
-            }
-          }
-        }
-      }
-      return false;
+    
+    const allFolders: Folder[] = [];
+    const flatten = (list: Folder[]) => {
+      list.forEach(f => {
+        allFolders.push(f);
+        if (f.subfolders) flatten(f.subfolders);
+      });
     };
-    findFolder(mockData.folders, selectedFolderId);
+    flatten(folders);
+
+    const buildCrumbs = (targetId: string) => {
+      const folder = allFolders.find(f => f.id.toString() === targetId.toString());
+      if (folder) {
+        if (folder.parentId) buildCrumbs(folder.parentId.toString());
+        crumbs.push({ id: folder.id.toString(), name: folder.name });
+      }
+    };
+    
+    buildCrumbs(selectedFolderId);
     return crumbs;
   };
 
@@ -61,7 +112,7 @@ export default function DocumentsPage() {
       <div className="w-64 border-r bg-card flex-shrink-0 overflow-y-auto scrollbar-thin p-4">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">Dossiers</h3>
         <FolderTree
-          folders={mockData.folders}
+          folders={folders}
           selectedId={selectedFolderId}
           onSelect={setSelectedFolder}
         />
@@ -105,6 +156,12 @@ export default function DocumentsPage() {
                 <List className="w-4 h-4" />
               </button>
             </div>
+            
+            <Button variant="outline" size="sm" onClick={() => setCreateFolderOpen(true)} className="gap-2">
+              <FolderPlus className="w-4 h-4" />
+              Nouveau dossier
+            </Button>
+
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-2">
               <Upload className="w-4 h-4" />
               Téléverser
@@ -114,7 +171,11 @@ export default function DocumentsPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {documents.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : documents.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
                 <FolderOpen className="w-8 h-8 text-muted-foreground" />
@@ -142,7 +203,32 @@ export default function DocumentsPage() {
       </AnimatePresence>
 
       {/* Upload modal */}
-      <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} />
+      <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onUploadSuccess={fetchDocuments} />
+
+      {/* Create Folder Dialog */}
+      <Dialog open={createFolderOpen} onOpenChange={setCreateFolderOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Créer un nouveau dossier</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateFolder} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="folderName">Nom du dossier</Label>
+              <Input
+                id="folderName"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Ex: Factures 2024"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateFolderOpen(false)}>Annuler</Button>
+              <Button type="submit">Créer</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

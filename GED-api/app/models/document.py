@@ -4,6 +4,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, DateTime, func, Integer, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from app.core.database import Base
+import enum
+
+class DocumentExpiryAction(str, enum.Enum):
+    NOTIFY = 'notify'
+    ARCHIVE = 'archive'
+    DELETE = 'delete'
 
 class Document(Base):
     __tablename__ = "documents"
@@ -26,6 +32,27 @@ class Document(Base):
     status: Mapped[str] = mapped_column(String, default="DRAFT") # DRAFT, REVIEW, APPROVED, ARCHIVED
     current_version: Mapped[int] = mapped_column(Integer, default=1)
 
+    # Duplicate detection
+    file_hash: Mapped[Optional[str]] = mapped_column(String(64), index=True)
+    hash_algorithm: Mapped[Optional[str]] = mapped_column(String(10), server_default='sha256')
+
+    # Expiration
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    expiry_action: Mapped[str] = mapped_column(String(20), server_default='notify')
+    expiry_notified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    # Archiving
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    archived_by: Mapped[Optional[str]] = mapped_column(String)
+    archive_reason: Mapped[Optional[str]] = mapped_column(String(255))
+
+    # Locking
+    is_locked: Mapped[bool] = mapped_column(Boolean, default=False)
+    locked_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    locked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    lock_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    lock_reason: Mapped[Optional[str]] = mapped_column(String(255))
     # Relationships
     folder = relationship("Folder", back_populates="documents")
     versions = relationship("DocumentVersion", back_populates="document", cascade="all, delete")

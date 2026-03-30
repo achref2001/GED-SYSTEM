@@ -6,28 +6,28 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 12%;
+    --background: 0 0% 95%; /* #F2F2F2 */
+    --foreground: 212 78% 10%; /* Very dark deep blue for text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 12%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 212 78% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 12%;
+    --popover-foreground: 212 78% 10%;
 
-    --primary: 221 83% 53%;
+    --primary: 212 78% 26%; /* #0F3F78 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 212 30% 90%;
+    --secondary-foreground: 212 78% 26%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 14% 46%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 212 20% 45%;
 
-    --accent: 210 20% 94%;
-    --accent-foreground: 215 25% 12%;
+    --accent: 212 78% 26%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 2 100% 44%; /* #E10600 */
     --destructive-foreground: 0 0% 100%;
 
     --success: 142 71% 45%;
@@ -36,37 +36,37 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 199 89% 48%;
+    --info: 212 78% 26%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 221 83% 53%;
+    --border: 212 20% 85%;
+    --input: 212 20% 85%;
+    --ring: 212 78% 26%;
 
     --radius: 0.75rem;
 
-    --sidebar-bg: 215 28% 12%;
-    --sidebar-fg: 214 20% 80%;
-    --sidebar-active: 221 83% 53%;
+    --sidebar-bg: 212 78% 15%; /* Darker Deep Blue */
+    --sidebar-fg: 0 0% 90%;
+    --sidebar-active: 2 100% 44%; /* Red for active items in sidebar? Or stay Blue? Let's use Red for highlight */
     --sidebar-active-fg: 0 0% 100%;
-    --sidebar-hover: 215 28% 18%;
-    --sidebar-border: 215 28% 20%;
+    --sidebar-hover: 212 78% 20%;
+    --sidebar-border: 212 78% 25%;
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 64px;
 
-    --file-pdf: 0 72% 51%;
-    --file-doc: 221 83% 53%;
+    --file-pdf: 2 100% 44%; /* PDF is Red */
+    --file-doc: 212 78% 26%; /* DOC is Blue */
     --file-xls: 142 71% 45%;
-    --file-img: 270 60% 55%;
-    --file-other: 215 14% 46%;
+    --file-img: 2 100% 44%;
+    --file-other: 212 20% 45%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 212 78% 15%;
+    --sidebar-primary: 212 78% 26%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 212 78% 26%;
+    --sidebar-ring: 212 78% 26%;
   }
 
   .dark {
@@ -109,12 +109,54 @@
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-2xl border border-white/10 shadow-2xl;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2.5s infinite linear;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+    background-size: 200% 100%;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-pulse-blue {
+    animation: pulse-blue 2s infinite;
+  }
+
+  @keyframes pulse-blue {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+    50% { opacity: 0.8; transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(37,99,235,0); }
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 font-black;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline-color: hsl(var(--primary) / 0.3);
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-600/10 selection:text-blue-600;
   }
 }

@@ -10,16 +10,25 @@ export function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-export function formatDate(date: string): string {
-  return format(new Date(date), 'dd MMM yyyy', { locale: fr });
+export function formatDate(date: string | null | undefined): string {
+  if (!date) return '-';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '-';
+  return format(d, 'dd MMM yyyy', { locale: fr });
 }
 
-export function formatDateTime(date: string): string {
-  return format(new Date(date), 'dd MMM yyyy à HH:mm', { locale: fr });
+export function formatDateTime(date: string | null | undefined): string {
+  if (!date) return '-';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '-';
+  return format(d, 'dd MMM yyyy à HH:mm', { locale: fr });
 }
 
-export function formatRelativeDate(date: string): string {
-  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr });
+export function formatRelativeDate(date: string | null | undefined): string {
+  if (!date) return '-';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '-';
+  return formatDistanceToNow(d, { addSuffix: true, locale: fr });
 }
 
 export function getFileTypeColor(type: FileType): string {

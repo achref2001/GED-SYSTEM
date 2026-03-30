@@ -13,14 +13,22 @@ import { FileTypeIcon } from '@/components/documents/FileTypeIcon';
 export default function DashboardPage() {
   const { stats, documents, auditLog } = mockData;
   const navigate = useNavigate();
-  const favorites = documents.filter((d) => d.isFavorite);
-  const storagePercent = getStoragePercentage(stats.storageUsed, stats.storageLimit);
+  const favorites = documents?.filter((d) => d.isFavorite) || [];
+  const storagePercent = stats ? getStoragePercentage(stats.storageUsed, stats.storageLimit) : 0;
+  
+  const statsToUse = stats || {
+    totalDocuments: 0,
+    storageUsed: 0,
+    storageLimit: 1,
+    recentUploads: 0,
+    pendingReviews: 0
+  };
 
   const statCards = [
-    { label: 'Total documents', value: stats.totalDocuments.toLocaleString(), icon: FileText, color: 'text-primary bg-primary/10' },
-    { label: 'Stockage utilisé', value: formatFileSize(stats.storageUsed), icon: HardDrive, color: 'text-info bg-info/10', sub: `${storagePercent}% de ${formatFileSize(stats.storageLimit)}` },
-    { label: 'Téléversements récents', value: stats.recentUploads.toString(), icon: Upload, color: 'text-success bg-success/10' },
-    { label: 'Révisions en attente', value: stats.pendingReviews.toString(), icon: Clock, color: 'text-warning bg-warning/10' },
+    { label: 'Total documents', value: statsToUse.totalDocuments.toLocaleString(), icon: FileText, color: 'text-primary bg-primary/10' },
+    { label: 'Stockage utilisé', value: formatFileSize(statsToUse.storageUsed), icon: HardDrive, color: 'text-info bg-info/10', sub: `${storagePercent}% de ${formatFileSize(statsToUse.storageLimit)}` },
+    { label: 'Téléversements récents', value: statsToUse.recentUploads.toString(), icon: Upload, color: 'text-success bg-success/10' },
+    { label: 'Révisions en attente', value: statsToUse.pendingReviews.toString(), icon: Clock, color: 'text-warning bg-warning/10' },
   ];
 
   return (
@@ -58,7 +66,7 @@ export default function DashboardPage() {
       <div className="bg-card rounded-xl border p-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-medium text-foreground">Espace de stockage</p>
-          <p className="text-sm text-muted-foreground">{formatFileSize(stats.storageUsed)} / {formatFileSize(stats.storageLimit)}</p>
+          <p className="text-sm text-muted-foreground">{formatFileSize(statsToUse.storageUsed)} / {formatFileSize(statsToUse.storageLimit)}</p>
         </div>
         <Progress value={storagePercent} className="h-2" />
       </div>
@@ -73,6 +81,7 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="divide-y">
+            {favorites.length === 0 && <p className="p-10 text-center text-muted-foreground bg-muted/20">Aucun favori</p>}
             {favorites.map((doc) => (
               <div
                 key={doc.id}
@@ -101,7 +110,9 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="divide-y">
-            {auditLog.slice(0, 6).map((entry) => (
+            {!auditLog || auditLog.length === 0 ? (
+              <p className="p-10 text-center text-muted-foreground bg-muted/20">Aucune activité récente</p>
+            ) : auditLog.slice(0, 6).map((entry) => (
               <div key={entry.id} className="flex items-start gap-3 px-5 py-3">
                 <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
                   <FolderOpen className="w-4 h-4 text-muted-foreground" />
