@@ -7,12 +7,13 @@ import { Loader2, FolderSearch, AlertOctagon, LayoutGrid } from 'lucide-react'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export function DocumentArea() {
+export function DocumentArea({ selectedTags }: { selectedTags?: string[] }) {
   const { currentFolderId, viewMode, sortBy, sortOrder } = useExplorerStore()
   const { data, isLoading, isError, refetch } = useDocuments({
     folder_id: currentFolderId,
     sort_by: sortBy,
-    sort_order: sortOrder
+    sort_order: sortOrder,
+    selectedTags: selectedTags
   })
 
   if (isLoading) {
@@ -62,7 +63,7 @@ export function DocumentArea() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-200 transition-all bg-slate-50/20">
+    <div className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-200 transition-all bg-slate-50/20 min-h-0">
       <AnimatePresence mode="wait">
         <motion.div
            key={viewMode}
@@ -70,7 +71,7 @@ export function DocumentArea() {
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: -10 }}
            transition={{ duration: 0.4, ease: "easeOut" }}
-           className="h-full"
+           className="min-h-full"
         >
           {viewMode === 'grid' ? (
             <DocumentGrid documents={data.items} />

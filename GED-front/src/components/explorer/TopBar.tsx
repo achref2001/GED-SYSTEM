@@ -7,18 +7,29 @@ import { Input } from '../ui/input'
 import { cn } from '../../lib/utils'
 
 export function TopBar() {
-  const { viewMode, setViewMode } = useExplorerStore()
+  const { viewMode, setViewMode, currentFolderId } = useExplorerStore()
   const { openModal } = useUploadStore()
+
+  const handleUploadClick = () => {
+    openModal(currentFolderId)
+  }
 
   return (
     <header className="h-20 px-8 bg-white/70 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-all">
       <div className="flex-1 max-w-2xl group transition-all">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-          <Input 
-            placeholder="Search documents, tags, or metadata..." 
-            className="h-12 pl-12 pr-4 bg-slate-50 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-xs font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all shadow-inner"
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            <Input 
+              placeholder="Search documents, tags, or metadata..." 
+              className="h-12 pl-12 pr-4 bg-slate-50 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-xs font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all shadow-inner"
+            />
+          </div>
+          {currentFolderId && (
+            <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-xs font-medium">
+              Folder {currentFolderId}
+            </div>
+          )}
         </div>
       </div>
 
@@ -47,7 +58,7 @@ export function TopBar() {
         <div className="h-8 w-px bg-slate-100 mx-1" />
 
         <Button 
-          onClick={() => openModal()}
+          onClick={handleUploadClick}
           className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xl shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 group flex items-center gap-2.5"
         >
           <Upload size={16} className="group-hover:-translate-y-0.5 transition-transform stroke-[2.5]" />

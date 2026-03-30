@@ -7,7 +7,10 @@ export function useDocuments(params: DocumentListParams) {
     queryFn: () => documentsApi.list(params),
     staleTime: 30_000,
     select: (res) => ({
-      items: res.data.data,
+      items: res.data.data?.filter(doc => 
+        params.selectedTags?.length === 0 || 
+        doc.tags?.some(tag => params.selectedTags.includes(tag.name))
+      ) || [],
       pagination: res.data.pagination
     })
   })

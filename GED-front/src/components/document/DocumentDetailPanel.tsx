@@ -119,7 +119,9 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm group">
                     <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors">Created</span>
-                    <span className="text-slate-900 font-bold bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 shadow-sm">{format(new Date(doc.created_at), 'PPP')}</span>
+                    <span className="text-slate-900 font-bold bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 shadow-sm">
+                      {doc.uploaded_at ? format(new Date(doc.uploaded_at), 'PPP') : 'Unknown'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm group">
                     <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors">By</span>
@@ -127,38 +129,42 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
                   </div>
                   <div className="flex items-center justify-between text-sm group">
                     <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors">Last Update</span>
-                    <span className="text-slate-900 font-bold bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 shadow-sm">{format(new Date(doc.updated_at), 'PPP')}</span>
+                    <span className="text-slate-900 font-bold bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 shadow-sm">
+                      {doc.updated_at ? format(new Date(doc.updated_at), 'PPP') : 'Unknown'}
+                    </span>
                   </div>
                 </div>
               </div>
               
               <div className="space-y-3 pt-6 border-t border-slate-50">
-                 <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-50 hover:text-red-600 font-bold transition-all"><Trash2 className="w-4 h-4 mr-3" /> Soft Delete</Button>
-                 <Button variant="ghost" className="w-full justify-start text-slate-600 hover:bg-slate-100 font-bold transition-all"><Archive className="w-4 h-4 mr-3" /> Archive Permanently</Button>
+                 <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-50 hover:text-red-600"><Trash2 className="w-4 h-4 mr-3" /> Soft Delete</Button>
+                 <Button variant="ghost" className="w-full justify-start text-slate-600 hover:bg-slate-100"><Archive className="w-4 h-4 mr-3" /> Archive Permanently</Button>
               </div>
             </TabsContent>
 
             <TabsContent value="history" className="mt-0">
                {versions?.length ? (
-                 <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                 <div className="space-y-6">
                     {versions.map((v, i) => (
                       <div key={v.id} className={cn(
                         "relative pl-8 border-l-2 py-4 group",
                         v.is_current ? "border-blue-500" : "border-slate-200"
                       )}>
                         <div className={cn(
-                          "absolute -left-[9px] top-4 w-4 h-4 rounded-full border-4 shadow-sm transition-transform duration-300 group-hover:scale-125",
+                          "absolute -left-[9px] top-4 w-4 h-4 rounded-full border-4",
                           v.is_current ? "bg-white border-blue-500" : "bg-slate-300 border-white"
                         )} />
                         <div className="flex items-center justify-between mb-2">
-                           <span className={cn("text-xs font-bold px-2.5 py-1 rounded-lg border uppercase tracking-wider", v.is_current ? "bg-blue-600 text-white border-blue-700 shadow-blue-600/30 shadow-md" : "bg-slate-100 text-slate-600 border-slate-200")}>Version {v.version_number}</span>
-                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{format(new Date(v.uploaded_at), 'MMM d, yyyy')}</span>
+                           <span className={cn("text-xs font-bold px-2.5 py-1 rounded-lg border uppercase tracking-wider", v.is_current ? "bg-blue-600 text-white border-blue-700" : "bg-slate-100 text-slate-600 border-slate-200")}>Version {v.version_number}</span>
+                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                             {v.uploaded_at ? format(new Date(v.uploaded_at), 'MMM d, yyyy') : 'Unknown date'}
+                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 group-hover:text-slate-800 transition-colors italic">“{v.comment || 'Incremental update with metadata refinement.'}”</p>
+                        <p className="text-xs text-slate-500 group-hover:text-slate-800 transition-colors italic">"{v.comment || 'Incremental update with metadata refinement.'}"</p>
                         <p className="text-[10px] mt-3 font-bold text-slate-400/60 uppercase tracking-tighter">Uploaded by: <span className="text-slate-900 border-b border-slate-100">{v.uploaded_by_name}</span></p>
                         {!v.is_current && (
                            <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button size="sm" variant="outline" className="h-7 text-[10px] hover:bg-blue-50 hover:text-blue-600 font-bold uppercase tracking-wider transition-all">Restore Version</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] hover:bg-blue-50 hover:text-blue-600">Restore Version</Button>
                            </div>
                         )}
                       </div>

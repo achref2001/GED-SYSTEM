@@ -10,10 +10,11 @@ import { TopBar } from '../../components/explorer/TopBar'
 import { Breadcrumb } from '../../components/explorer/Breadcrumb'
 import { SortBar } from '../../components/explorer/SortBar'
 import { BulkActionBar } from '../../components/bulk/BulkActionBar'
+import { TagFilter } from '../../components/explorer/TagFilter'
 import { DocumentArea } from '../../components/explorer/DocumentArea'
 
 export default function ExplorerPage() {
-  const { currentFolderId, openDocumentId, isDetailPanelOpen } = useExplorerStore()
+  const { currentFolderId, openDocumentId, isDetailPanelOpen, selectedTags } = useExplorerStore()
   
   return (
     <div className="flex h-full overflow-hidden bg-slate-50">
@@ -30,35 +31,32 @@ export default function ExplorerPage() {
         
         {/* CENTER: Main Explorer Content */}
         <main className={cn(
-          "flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out relative",
+          "flex-1 flex flex-col transition-all duration-300 ease-in-out relative",
           isDetailPanelOpen && "mr-[400px]"
         )}>
           <TopBar />
           <Breadcrumb />
+          <TagFilter />
           <SortBar />
           <BulkActionBar />
           
-          <div className="flex-1 overflow-hidden flex flex-col relative z-0">
-             <DocumentArea />
+          <div className="flex-1 flex flex-col relative z-0">
+             <DocumentArea selectedTags={selectedTags} />
           </div>
         </main>
         
         {/* RIGHT: Detail Panel (slide-in) */}
-        <AnimatePresence>
-          {isDetailPanelOpen && openDocumentId && (
-            <motion.aside
-              initial={{ x: 400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 400, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-[400px] 
-                         bg-white border-l border-slate-200 
-                         shadow-2xl overflow-y-auto z-30"
-            >
-              <DocumentDetailPanel documentId={openDocumentId} />
-            </motion.aside>
-          )}
-        </AnimatePresence>
+        {isDetailPanelOpen && openDocumentId && (
+          <aside
+            className={`fixed right-0 top-0 bottom-0 w-[400px] 
+                       bg-white border-l border-slate-200 
+                       shadow-lg overflow-y-auto z-30 transition-transform duration-200 ${
+              isDetailPanelOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            <DocumentDetailPanel documentId={openDocumentId} />
+          </aside>
+        )}
         
       </div>
   )

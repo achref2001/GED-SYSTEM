@@ -8,6 +8,7 @@ import { formatDistanceToNow, format } from 'date-fns'
 import { Lock, Clock, Archive, MoreHorizontal, MousePointerClick, Download, FileDigit } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { AnimatePresence } from 'framer-motion'
 
 export function DocumentRow({ document: doc }: { document: Document }) {
   const { openDocument, toggleSelect, selectedDocumentIds } = useExplorerStore()
@@ -65,6 +66,14 @@ export function DocumentRow({ document: doc }: { document: Document }) {
                <span>{doc.file_type}</span>
                <span className="opacity-30">•</span>
                <span className="truncate">{doc.folder_path || 'Root Database'}</span>
+               <span className="opacity-30">•</span>
+               <span className="truncate">{doc.created_by_name || 'Unknown'}</span>
+               {doc.tags && doc.tags.length > 0 && (
+                 <>
+                   <span className="opacity-30">•</span>
+                   <span className="truncate">{doc.tags.map(tag => tag.name).join(', ')}</span>
+                 </>
+               )}
             </div>
          </div>
       </div>

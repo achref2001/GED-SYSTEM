@@ -1,10 +1,16 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_, desc
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from app.core.database import get_db
 from app.core.response import APIResponse, success_response, Pagination
 from app.schemas.document import DocumentResponse
+from app.schemas.tag import TagResponse
 from app.models.user import User
+from app.models.document import Document
+from app.models.tag import Tag
+from app.models.audit import AuditLog
 from app.api.deps import get_current_user
 from app.services.document import DocumentService
 from app.repositories.document import document_repo
@@ -74,9 +80,68 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    skip = (page - 1) * size
-    total, docs = await document_repo.search(db, folder_id, q, skip, size)
-    return success_response(docs, pagination=Pagination.create(total, page, size))
+    try:
+        # Simple query first to test
+        query = select(Document).where(Document.is_deleted == False)
+        if folder_id is not None:
+            query = query.where(Document.folder_id == folder_id)
+        
+        # Get total count
+        count_result = await db.execute(select(Document).where(Document.is_deleted == False))
+        total = len(list(count_result.scalars().all()))
+        
+        # Get documents with pagination
+        query = query.options(selectinload(Document.tags)).order_by(desc(Document.uploaded_at)).offset((page - 1) * size).limit(size)
+        result = await db.execute(query)
+        docs = result.scalars().all()
+        
+        # Add user info to each document
+        doc_list = []
+        for doc in docs:
+            user_result = await db.execute(select(User).where(User.id == doc.uploaded_by_id))
+            user = user_result.scalars().first()
+            
+            doc_dict = {
+                "id": doc.id,
+                "name": doc.name,
+                "description": doc.description,
+                "file_path": doc.file_path,
+                "file_size": doc.file_size,
+                "mime_type": doc.mime_type,
+                "folder_id": doc.folder_id,
+                "uploaded_by_id": doc.uploaded_by_id,
+                "uploaded_at": doc.uploaded_at,
+                "updated_at": doc.updated_at,
+                "is_deleted": doc.is_deleted,
+                "status": doc.status,
+                "current_version": doc.current_version,
+                "file_hash": doc.file_hash,
+                "hash_algorithm": doc.hash_algorithm,
+                "expires_at": doc.expires_at,
+                "expiry_action": doc.expiry_action,
+                "expiry_notified_at": doc.expiry_notified_at,
+                "is_archived": doc.is_archived,
+                "archived_at": doc.archived_at,
+                "archived_by": doc.archived_by,
+                "archive_reason": doc.archive_reason,
+                "is_locked": doc.is_locked,
+                "locked_by_id": doc.locked_by_id,
+                "locked_at": doc.locked_at,
+                "lock_expires_at": doc.lock_expires_at,
+                "lock_reason": doc.lock_reason,
+                "metadata_json": doc.metadata_json,
+                "tags": [{"id": tag.id, "name": tag.name} for tag in (doc.tags or [])],
+                'created_by_name': user.full_name if user else 'Unknown',
+                'created_by': user.email if user else 'unknown'
+            }
+            doc_list.append(doc_dict)
+        
+        return success_response(doc_list, pagination=Pagination.create(total, page, size))
+    except Exception as e:
+        import traceback
+        print(f"Error in list_documents: {e}")
+        print(traceback.format_exc())
+        return APIResponse(success=False, data=None, message=f"Error: {str(e)}")
 
 @router.get("/{id}/download")
 async def download_document(
@@ -99,14 +164,62 @@ async def get_document(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    doc = await document_repo.get(db, id)
+    from sqlalchemy.orm import selectinload
+    from app.models.user import User
+    
+    # Get document with tags
+    result = await db.execute(
+        select(Document)
+        .options(selectinload(Document.tags), selectinload(Document.folder), selectinload(Document.versions))
+        .where(Document.id == id)
+    )
+    doc = result.scalars().first()
     if not doc:
         return APIResponse(success=False, message="Document not found")
+    
+    # Get user info for created_by_name
+    user_result = await db.execute(select(User).where(User.id == doc.uploaded_by_id))
+    user = user_result.scalars().first()
+    
+    # Add user info to document response
+    doc_dict = {
+        "id": doc.id,
+        "name": doc.name,
+        "description": doc.description,
+        "file_path": doc.file_path,
+        "file_size": doc.file_size,
+        "mime_type": doc.mime_type,
+        "folder_id": doc.folder_id,
+        "uploaded_by_id": doc.uploaded_by_id,
+        "uploaded_at": doc.uploaded_at,
+        "updated_at": doc.updated_at,
+        "is_deleted": doc.is_deleted,
+        "status": doc.status,
+        "current_version": doc.current_version,
+        "file_hash": doc.file_hash,
+        "hash_algorithm": doc.hash_algorithm,
+        "expires_at": doc.expires_at,
+        "expiry_action": doc.expiry_action,
+        "expiry_notified_at": doc.expiry_notified_at,
+        "is_archived": doc.is_archived,
+        "archived_at": doc.archived_at,
+        "archived_by": doc.archived_by,
+        "archive_reason": doc.archive_reason,
+        "is_locked": doc.is_locked,
+        "locked_by_id": doc.locked_by_id,
+        "locked_at": doc.locked_at,
+        "lock_expires_at": doc.lock_expires_at,
+        "lock_reason": doc.lock_reason,
+        "metadata_json": doc.metadata_json,
+        "tags": [{"id": tag.id, "name": tag.name} for tag in (doc.tags or [])],
+        'created_by_name': user.full_name if user else 'Unknown',
+        'created_by': user.email if user else 'unknown'
+    }
     
     # Record view history
     await ViewTrackingService.record_view(db, current_user.id, id)
     
-    return success_response(doc)
+    return success_response(doc_dict)
 
 @router.delete("/{id}", response_model=APIResponse)
 async def delete_document(
@@ -384,5 +497,125 @@ async def get_locked_documents(
     )
     docs = result.scalars().all()
     return success_response(docs)
+
+@router.get("/{id}/versions", response_model=APIResponse[List[dict]])
+async def get_document_versions(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from sqlalchemy.orm import selectinload
+    from app.models.document import Document
+    from app.models.user import User
+    
+    # Get the document
+    result = await db.execute(select(Document).filter(Document.id == id))
+    doc = result.scalars().first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Get user info
+    user_result = await db.execute(select(User).where(User.id == doc.uploaded_by_id))
+    user = user_result.scalars().first()
+    
+    # For now, return current version as a simple list
+    # This can be extended later to include actual version history
+    versions = [{
+        "id": doc.id,
+        "version": "1.0",
+        "created_at": doc.uploaded_at,
+        "updated_at": doc.updated_at,
+        "created_by": user.full_name if user else 'Unknown',
+        "uploaded_by_name": user.full_name if user else 'Unknown',
+        "file_size": doc.file_size,
+        "file_name": doc.name
+    }]
+    
+    return success_response(versions)
+
+# Tags endpoints
+@router.get("/tags", response_model=APIResponse[List[TagResponse]])
+async def get_all_tags(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(select(Tag))
+    tags = result.scalars().all()
+    return success_response(tags)
+
+@router.post("/{id}/tags", response_model=APIResponse)
+async def add_tag_to_document(
+    id: int,
+    tag_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Get document
+    doc_result = await db.execute(select(Document).where(Document.id == id))
+    doc = doc_result.scalars().first()
+    if not doc:
+        return APIResponse(success=False, message="Document not found")
+    
+    # Get or create tag
+    tag_result = await db.execute(select(Tag).where(Tag.name == tag_name))
+    tag = tag_result.scalars().first()
+    if not tag:
+        tag = Tag(name=tag_name)
+        db.add(tag)
+        await db.commit()
+        await db.refresh(tag)
+    
+    # Add tag to document
+    if tag not in doc.tags:
+        doc.tags.append(tag)
+        db.add(AuditLog(user_id=current_user.id, action="ADD_TAG", document_id=doc.id))
+        await db.commit()
+        await db.refresh(doc)
+    
+    return success_response({"message": f"Tag '{tag_name}' added to document"})
+
+@router.delete("/{id}/tags/{tag_name}", response_model=APIResponse)
+async def remove_tag_from_document(
+    id: int,
+    tag_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Get document
+    doc_result = await db.execute(select(Document).where(Document.id == id))
+    doc = doc_result.scalars().first()
+    if not doc:
+        return APIResponse(success=False, message="Document not found")
+    
+    # Get tag
+    tag_result = await db.execute(select(Tag).where(Tag.name == tag_name))
+    tag = tag_result.scalars().first()
+    if not tag:
+        return APIResponse(success=False, message="Tag not found")
+    
+    # Remove tag from document
+    if tag in doc.tags:
+        doc.tags.remove(tag)
+        db.add(AuditLog(user_id=current_user.id, action="REMOVE_TAG", document_id=doc.id))
+        await db.commit()
+        await db.refresh(doc)
+    
+    return success_response({"message": f"Tag '{tag_name}' removed from document"})
+
+@router.get("/{id}/tags", response_model=APIResponse[List[TagResponse]])
+async def get_document_tags(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Get document with tags
+    result = await db.execute(
+        select(Document).options(selectinload(Document.tags)).where(Document.id == id)
+    )
+    doc = result.scalars().first()
+    if not doc:
+        return APIResponse(success=False, message="Document not found")
+    
+    return success_response(doc.tags)
 
 

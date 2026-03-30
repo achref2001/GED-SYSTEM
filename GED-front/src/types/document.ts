@@ -4,6 +4,11 @@ export type WorkflowStatus = 'DRAFT' | 'REVIEW' | 'APPROVED' | 'ARCHIVED'
 export type OCRStatus = 'pending' | 'processing' | 
                         'completed' | 'failed' | 'not_required'
 
+export interface Tag {
+  id: number
+  name: string
+}
+
 export interface Document {
   id: number
   name: string
@@ -14,7 +19,8 @@ export interface Document {
   file_hash: string
   folder_id: number | null
   folder_path: string
-  tags: string[]
+  tfolder_path: string
+  tags: Tag[]
   metadata: Record<string, unknown>
   category: string | null
   
@@ -50,7 +56,7 @@ export interface Document {
   // Audit
   created_by: string
   created_by_name: string
-  created_at: string
+  uploaded_at: string
   updated_at: string
   is_deleted: boolean
   

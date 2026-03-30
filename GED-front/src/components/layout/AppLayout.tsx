@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
+import { useUploadStore } from '../../stores/uploadStore'
 import { 
   LayoutDashboard, FolderOpen, Search, Star, Clock, 
   FileStack, Shield, Bell, LogOut, User, Settings, 
@@ -27,6 +28,7 @@ const adminItems = [
 
 export function AppLayout({ children }: { children?: React.ReactNode }) {
   const { user, logout, hasAnyRole } = useAuthStore()
+  const { isModalOpen, closeModal } = useUploadStore()
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
 
@@ -36,32 +38,28 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
       <Toaster position="top-right" richColors />
       
+      {/* Upload Modal */}
+      <UploadModal />
+      
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: collapsed ? 80 : 280 }}
-        className="relative z-40 flex flex-col bg-slate-900 text-slate-300 border-r border-slate-800 shadow-2xl"
+      <div
+        className={`relative z-40 flex flex-col bg-slate-900 text-slate-300 border-r border-slate-800 shadow-lg transition-all duration-200 ${
+          collapsed ? 'w-20' : 'w-64'
+        }`}
       >
         {/* Logo Section */}
         <div className="h-20 flex items-center px-6 gap-3 border-b border-slate-800">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/20">
+          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow">
             <FolderOpen className="w-6 h-6 text-white" />
           </div>
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="font-bold text-xl text-white tracking-tight"
-              >
-                GED<span className="text-blue-500">System</span>
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {!collapsed && (
+            <span className="font-bold text-xl text-white tracking-tight">
+              GED<span className="text-blue-500">System</span>
+            </span>
+          )}
         </div>
 
         {/* Navigation */}
@@ -137,14 +135,14 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
         {/* Toggle Button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-24 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-500 transition-colors z-50 invisible lg:visible"
+          className="absolute -right-3 top-24 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center shadow hover:bg-blue-500 transition-colors z-50 invisible lg:visible"
         >
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
-      </motion.aside>
+      </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative h-full overflow-hidden">
+      <div className="flex-1 flex flex-col relative h-full">
         {children || <Outlet />}
       </div>
     </div>

@@ -9,6 +9,7 @@ export interface DocumentListParams {
   size?: number
   sort_by?: string
   sort_order?: 'asc' | 'desc'
+  selectedTags?: string[]
 }
 
 export const documentsApi = {

@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { FolderTree } from '../../types/folder'
-import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react'
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Upload } from 'lucide-react'
 import { useExplorerStore } from '../../stores/explorerStore'
+import { useUploadStore } from '../../stores/uploadStore'
 import { cn } from '../../lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '../ui/button'
 
 interface FolderTreeNodeProps {
   node: FolderTree
@@ -13,6 +15,7 @@ interface FolderTreeNodeProps {
 export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { currentFolderId, setCurrentFolder } = useExplorerStore()
+  const { openModal } = useUploadStore()
   const hasChildren = node.subfolders && node.subfolders.length > 0
   const isActive = currentFolderId === node.id
 
@@ -25,6 +28,12 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
   const toggleOpen = (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsOpen(!isOpen)
+  }
+
+  const handleUpload = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCurrentFolder(node.id)
+    openModal(node.id)
   }
 
   return (
@@ -60,6 +69,16 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
         <span className="text-sm font-medium truncate flex-1">
           {node.name}
         </span>
+        
+        <Button
+          onClick={handleUpload}
+          size="sm"
+          variant="ghost"
+          className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 hover:bg-blue-50 hover:text-blue-600"
+          title="Upload to this folder"
+        >
+          <Upload size={14} />
+        </Button>
       </div>
 
       <AnimatePresence>

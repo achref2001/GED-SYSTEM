@@ -8,7 +8,8 @@ interface ExplorerState {
   sortBy: 'name' | 'date' | 'size' | 'type'
   sortOrder: 'asc' | 'desc'
   isDetailPanelOpen: boolean
-  
+  selectedTags: string[]
+
   // Actions
   setCurrentFolder: (id: number | null) => void
   setViewMode: (mode: 'grid' | 'list') => void
@@ -20,6 +21,7 @@ interface ExplorerState {
   closeDetailPanel: () => void
   setSortBy: (sort: 'name' | 'date' | 'size' | 'type') => void
   toggleSortOrder: () => void
+  setSelectedTags: (tags: string[]) => void
 }
 
 export const useExplorerStore = create<ExplorerState>((set, get) => ({
@@ -30,6 +32,7 @@ export const useExplorerStore = create<ExplorerState>((set, get) => ({
   sortBy: 'name',
   sortOrder: 'asc',
   isDetailPanelOpen: false,
+  selectedTags: [],
 
   setCurrentFolder: (id) => set({ currentFolderId: id, selectedDocumentIds: new Set() }),
   setViewMode: (mode) => set({ viewMode: mode }),

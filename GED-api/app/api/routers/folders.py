@@ -58,3 +58,11 @@ async def get_folders(db: AsyncSession = Depends(get_db), current_user: User = D
     )
     folders = result.scalars().all()
     return success_response(list(folders))
+
+@router.get("/{id}", response_model=APIResponse[FolderResponse])
+async def get_folder_by_id(id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    folder = await db.get(Folder, id)
+    if not folder:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Folder not found")
+    return success_response(folder)
