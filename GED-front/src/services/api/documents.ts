@@ -32,11 +32,16 @@ export const documentsApi = {
   },
 
   open: async (id: number) => {
+    const newWindow = window.open('', '_blank')
     const response = await api.get(`/documents/${id}/download`, { responseType: 'blob' })
-    const type = response.data.type || 'application/octet-stream'
+    const type = response.headers['content-type'] || response.data.type || 'application/octet-stream'
     const url = URL.createObjectURL(new Blob([response.data], { type }))
-    window.open(url, '_blank')
-    setTimeout(() => URL.revokeObjectURL(url), 15000)
+    if (newWindow) {
+      newWindow.location.href = url
+    } else {
+      window.open(url, '_blank')
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
   },
 
   upload: (

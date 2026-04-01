@@ -14,7 +14,8 @@ import { Toaster } from 'sonner'
 import { UploadModal } from '../upload/UploadModal'
 import { 
   ChevronDown, 
-  Tag as TagIcon
+  Tag as TagIcon,
+  FileType
 } from 'lucide-react'
 
 const navItems = [
@@ -206,6 +207,18 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                       <TagIcon size={14} className="group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-semibold tracking-wide">Manage Tags</span>
                     </NavLink>
+                    <NavLink
+                      to="/settings/extensions"
+                      className={({ isActive }) => cn(
+                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group",
+                        isActive
+                          ? "bg-indigo-500/10 text-indigo-600 font-bold"
+                          : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                      )}
+                    >
+                      <FileType size={14} className="group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-semibold tracking-wide">Allowed Extensions</span>
+                    </NavLink>
                   </div>
                 </motion.div>
               )}
@@ -213,16 +226,28 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
             
             {/* If collapsed, show tags icon as a standalone button */}
             {collapsed && isSettingsOpen && (
-               <NavLink
+              <div className="space-y-1">
+                <NavLink
                   to="/settings/tags"
                   className={({ isActive }) => cn(
                     "flex items-center justify-center w-full py-3 transition-colors",
                     isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-500 hover:text-indigo-600 hover:bg-slate-50"
                   )}
                   title="Manage Tags"
-               >
-                 <TagIcon size={20} />
-               </NavLink>
+                >
+                  <TagIcon size={20} />
+                </NavLink>
+                <NavLink
+                  to="/settings/extensions"
+                  className={({ isActive }) => cn(
+                    "flex items-center justify-center w-full py-3 transition-colors",
+                    isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-500 hover:text-indigo-600 hover:bg-slate-50"
+                  )}
+                  title="Allowed Extensions"
+                >
+                  <FileType size={20} />
+                </NavLink>
+              </div>
             )}
           </div>
         </div>

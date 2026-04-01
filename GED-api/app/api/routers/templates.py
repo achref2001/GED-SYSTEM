@@ -11,9 +11,11 @@ from app.models.document_template import DocumentTemplate, DocumentTemplateVersi
 from app.schemas.template import TemplateResponse, TemplateVersionResponse, DocumentCreateFromTemplate
 from app.services.template_service import TemplateService
 from app.services.storage import StorageService
+from app.services.system_settings import SystemSettingsService
 
 router = APIRouter()
 storage_service = StorageService()
+settings_service = SystemSettingsService()
 
 @router.post("", response_model=APIResponse[TemplateResponse])
 async def create_template(
@@ -28,6 +30,16 @@ async def create_template(
 ):
     if current_user.role not in ["ADMIN", "MANAGER"]:
         raise HTTPException(status_code=403, detail="Permissions denied")
+
+    ext = ""
+    if file.filename and "." in file.filename:
+        ext = "." + file.filename.rsplit(".", 1)[-1].lower()
+    allowed = settings_service.get_allowed_extensions()
+    if ext not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File extension '{ext or '(none)'}' is not allowed. Allowed: {', '.join(allowed)}",
+        )
         
     file_path = await storage_service.upload_file(file)
     content, _ = await storage_service.get_file(file_path)

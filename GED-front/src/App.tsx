@@ -14,6 +14,7 @@ import SearchPage from "@/pages/SearchPage";
 import AdminPage from "@/pages/AdminPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
 import TagsPage from "@/pages/settings/TagsPage";
+import ExtensionsPage from "@/pages/settings/ExtensionsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,14 @@ const App = () => (
             <Route path="/templates" element={<TemplatesPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/settings/tags" element={<TagsPage />} />
+            <Route
+              path="/settings/extensions"
+              element={
+                <ProtectedRoute roles={['ADMIN']}>
+                  <ExtensionsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={

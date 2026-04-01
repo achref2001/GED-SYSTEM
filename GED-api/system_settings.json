@@ -1,0 +1,16 @@
+{
+  "allowed_extensions": [
+    ".pdf",
+    ".jpg",
+    ".jpeg",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".txt",
+    ".csv",
+    ".test"
+  ]
+}

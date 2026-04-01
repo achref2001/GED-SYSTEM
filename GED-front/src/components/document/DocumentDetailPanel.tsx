@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import { TagSelector } from '../shared/TagSelector'
 import { useBulkMutation } from '../../hooks/mutations/useBulkMutation'
 import { toast } from 'sonner'
+import { documentsApi } from '../../services/api/documents'
 
 export function DocumentDetailPanel({ documentId }: { documentId: number }) {
   const { closeDetailPanel } = useExplorerStore()
@@ -66,6 +67,22 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
     )
   }
 
+  const handleDownload = async () => {
+    try {
+      await documentsApi.download(doc.id, doc.name)
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to download document')
+    }
+  }
+
+  const handleOpen = async () => {
+    try {
+      await documentsApi.open(doc.id)
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to open document')
+    }
+  }
+
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
       {/* Header */}
@@ -104,10 +121,10 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
           </div>
           
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <Button variant="default" className="w-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+            <Button onClick={handleDownload} variant="default" className="w-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
               <Download className="w-4 h-4 mr-2" /> Download
             </Button>
-            <Button variant="secondary" className="w-full bg-slate-100 text-slate-900 hover:bg-slate-200">
+            <Button onClick={handleOpen} variant="secondary" className="w-full bg-slate-100 text-slate-900 hover:bg-slate-200">
               <ExternalLink className="w-4 h-4 mr-2" /> Open
             </Button>
           </div>

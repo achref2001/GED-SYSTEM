@@ -5,16 +5,31 @@ import { useUpload } from '../../hooks/useUpload'
 import { UploadCloud, FileStack, ShieldCheck, Box, Sparkles, LayoutGrid } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
+import { settingsApi } from '../../services/api/settings'
+import { toast } from 'sonner'
 
 export function UploadDropzone() {
   const { addFiles } = useUploadStore()
   const { processFile } = useUpload()
+  const { data: policyRes } = useQuery({
+    queryKey: ['upload-policy'],
+    queryFn: () => settingsApi.getUploadPolicy(),
+  })
+  const allowedExtensions = policyRes?.data?.data?.allowed_extensions || []
+  const acceptConfig = allowedExtensions.length > 0 ? { '*/*': allowedExtensions } : undefined
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     addFiles(acceptedFiles)
   }, [addFiles])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: acceptConfig,
+    onDropRejected: () => {
+      toast.error(`Some files were rejected. Allowed extensions: ${allowedExtensions.join(', ')}`)
+    }
+  })
 
   return (
     <div 

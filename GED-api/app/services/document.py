@@ -1,14 +1,29 @@
 from fastapi import UploadFile
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.document import Document, DocumentVersion
 from app.models.audit import AuditLog
 from app.schemas.document import DocumentResponse
 from app.services.storage import StorageService
+from app.services.system_settings import SystemSettingsService
 from typing import Optional
 
 storage_service = StorageService()
+system_settings_service = SystemSettingsService()
 
 class DocumentService:
+    @staticmethod
+    def _validate_file_extension(filename: Optional[str]) -> None:
+        ext = ""
+        if filename and "." in filename:
+            ext = "." + filename.rsplit(".", 1)[-1].lower()
+        allowed = system_settings_service.get_allowed_extensions()
+        if ext not in allowed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File extension '{ext or '(none)'}' is not allowed. Allowed: {', '.join(allowed)}",
+            )
+
     @staticmethod
     async def _build_folder_segments(db: AsyncSession, folder_id: Optional[int]) -> list[str]:
         """Build nested folder path segments for storage from DB hierarchy."""
@@ -49,6 +64,7 @@ class DocumentService:
 
     @staticmethod
     async def upload_document(db: AsyncSession, file: UploadFile, folder_id: Optional[int], user_id: int, force: bool = False) -> Document:
+        DocumentService._validate_file_extension(file.filename)
         file_hash = await DocumentService.compute_file_hash(file)
         folder_segments = await DocumentService._build_folder_segments(db, folder_id)
         
