@@ -5,9 +5,10 @@ import type { UserRole } from '@/types';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   roles?: UserRole[];
+  permissions?: string[];
 }
 
-export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, roles, permissions }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
@@ -16,7 +17,18 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
   }
 
   if (roles && user && !roles.includes(user.role)) {
-    return <Navigate to="/403" replace />;
+    const effectiveRole = (user as any).effective_role || user.role
+    if (!roles.includes(effectiveRole as any)) {
+      return <Navigate to="/403" replace />;
+    }
+  }
+
+  if (permissions && user) {
+    const userPerms = (user as any).permissions || []
+    const isAllowed = permissions.every((p) => userPerms.includes(p))
+    if (!isAllowed) {
+      return <Navigate to="/403" replace />;
+    }
   }
 
   return <>{children}</>;

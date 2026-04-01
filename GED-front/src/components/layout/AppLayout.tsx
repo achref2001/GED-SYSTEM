@@ -32,7 +32,7 @@ const adminItems = [
 ]
 
 export function AppLayout({ children }: { children?: React.ReactNode }) {
-  const { user, logout, hasAnyRole } = useAuthStore()
+  const { user, logout, hasAnyRole, hasAnyPermission } = useAuthStore()
   const { isModalOpen, closeModal } = useUploadStore()
   const [collapsed, setCollapsed] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -219,6 +219,20 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                       <FileType size={14} className="group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-semibold tracking-wide">Allowed Extensions</span>
                     </NavLink>
+                    {hasAnyPermission('users.manage_roles') && (
+                      <NavLink
+                        to="/settings/rbac"
+                        className={({ isActive }) => cn(
+                          "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group",
+                          isActive
+                            ? "bg-indigo-500/10 text-indigo-600 font-bold"
+                            : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                        )}
+                      >
+                        <Shield size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-semibold tracking-wide">RBAC Roles</span>
+                      </NavLink>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -247,6 +261,18 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                 >
                   <FileType size={20} />
                 </NavLink>
+                {hasAnyPermission('users.manage_roles') && (
+                  <NavLink
+                    to="/settings/rbac"
+                    className={({ isActive }) => cn(
+                      "flex items-center justify-center w-full py-3 transition-colors",
+                      isActive ? "text-indigo-600 bg-indigo-50" : "text-slate-500 hover:text-indigo-600 hover:bg-slate-50"
+                    )}
+                    title="RBAC Roles"
+                  >
+                    <Shield size={20} />
+                  </NavLink>
+                )}
               </div>
             )}
           </div>
@@ -303,4 +329,3 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
     </div>
   )
 }
-

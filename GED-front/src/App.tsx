@@ -15,6 +15,7 @@ import AdminPage from "@/pages/AdminPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
 import TagsPage from "@/pages/settings/TagsPage";
 import ExtensionsPage from "@/pages/settings/ExtensionsPage";
+import RbacPage from "@/pages/settings/RbacPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = () => (
               element={
                 <ProtectedRoute roles={['ADMIN']}>
                   <ExtensionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/rbac"
+              element={
+                <ProtectedRoute permissions={['users.manage_roles']}>
+                  <RbacPage />
                 </ProtectedRoute>
               }
             />

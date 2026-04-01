@@ -18,9 +18,21 @@ class UserResponse(UserBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+class AuthUserProfile(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: Optional[str] = None
+    role: str
+    effective_role: str
+    permissions: list[str] = []
+    is_active: bool
+    created_at: datetime
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+    refresh_token: Optional[str] = None
+    user: Optional[AuthUserProfile] = None
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None

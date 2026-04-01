@@ -4,11 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import verify_password, create_access_token, get_password_hash
 from app.core.response import APIResponse, success_response, error_response
-from app.schemas.user import UserResponse, UserCreate, Token
+from app.schemas.user import UserResponse, UserCreate, Token, AuthUserProfile
 from app.models.user import User
 from app.services.auth_service import get_user_by_email
+from app.services.rbac_service import RBACService
+from app.api.deps import get_current_user
 
 router = APIRouter()
+rbac_service = RBACService()
 
 @router.post("/register", response_model=APIResponse[UserResponse])
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
@@ -34,4 +37,39 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     
     access_token = create_access_token(subject=user.id)
-    return {"access_token": access_token, "token_type": "bearer"}
+    fallback_role = user.role.value if hasattr(user.role, "value") else str(user.role)
+    effective_role = rbac_service.get_user_effective_role(user.id, fallback_role)
+    permissions = rbac_service.get_permissions_for_role(effective_role)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": AuthUserProfile(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            role=fallback_role,
+            effective_role=effective_role,
+            permissions=permissions,
+            is_active=user.is_active,
+            created_at=user.created_at,
+        ),
+    }
+
+
+@router.get("/me", response_model=APIResponse[AuthUserProfile])
+async def me(current_user: User = Depends(get_current_user)):
+    fallback_role = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    effective_role = rbac_service.get_user_effective_role(current_user.id, fallback_role)
+    permissions = rbac_service.get_permissions_for_role(effective_role)
+    return success_response(
+        AuthUserProfile(
+            id=current_user.id,
+            email=current_user.email,
+            full_name=current_user.full_name,
+            role=fallback_role,
+            effective_role=effective_role,
+            permissions=permissions,
+            is_active=current_user.is_active,
+            created_at=current_user.created_at,
+        )
+    )

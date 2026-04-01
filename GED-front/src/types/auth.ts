@@ -1,10 +1,12 @@
-export type Role = 'ADMIN' | 'MANAGER' | 'USER'
+export type Role = string
 
 export interface User {
   id: number
   email: string
   full_name: string | null
   role: Role
+  effective_role?: string
+  permissions?: string[]
   is_active: boolean
   created_at: string
 }

@@ -11,6 +11,8 @@ interface AuthState {
   logout: () => void
   hasRole: (roles: Role[]) => boolean
   hasAnyRole: (...roles: Role[]) => boolean
+  hasPermission: (permission: string) => boolean
+  hasAnyPermission: (...permissions: string[]) => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -40,8 +42,21 @@ export const useAuthStore = create<AuthState>()(
       
       hasAnyRole: (...roles) => {
         const user = get().user
-        return !!user && roles.includes(user.role)
-      }
+        if (!user) return false
+        const effectiveRole = user.effective_role || user.role
+        return roles.includes(effectiveRole)
+      },
+
+      hasPermission: (permission) => {
+        const user = get().user
+        return !!user?.permissions?.includes(permission)
+      },
+
+      hasAnyPermission: (...permissions) => {
+        const user = get().user
+        if (!user?.permissions) return false
+        return permissions.some((p) => user.permissions!.includes(p))
+      },
     }),
     {
       name: 'auth-storage',

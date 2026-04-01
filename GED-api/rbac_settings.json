@@ -1,0 +1,34 @@
+{
+  "roles": {
+    "ADMIN": [
+      "documents.read",
+      "documents.write",
+      "documents.delete",
+      "folders.read",
+      "folders.write",
+      "tags.manage",
+      "templates.manage",
+      "settings.manage",
+      "users.manage_roles"
+    ],
+    "MANAGER": [
+      "documents.read",
+      "documents.write",
+      "folders.read",
+      "folders.write",
+      "tags.manage",
+      "templates.manage"
+    ],
+    "EDITOR": [
+      "documents.read",
+      "documents.write",
+      "folders.read",
+      "folders.write"
+    ],
+    "VIEWER": [
+      "documents.read",
+      "folders.read"
+    ]
+  },
+  "user_roles": {}
+}

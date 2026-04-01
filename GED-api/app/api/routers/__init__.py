@@ -8,6 +8,7 @@ from app.api.routers.favorites import router as favorites_router
 from app.api.routers.recently_viewed import router as recently_viewed_router
 from app.api.routers.templates import router as templates_router
 from app.api.routers.settings import router as settings_router
+from app.api.routers.rbac import router as rbac_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router, prefix="/auth", tags=["Auth"])
@@ -19,3 +20,4 @@ api_router.include_router(favorites_router, prefix="/favorites", tags=["Favorite
 api_router.include_router(recently_viewed_router, prefix="/recently-viewed", tags=["Recently Viewed"])
 api_router.include_router(templates_router, prefix="/templates", tags=["Templates"])
 api_router.include_router(settings_router, prefix="/settings", tags=["Settings"])
+api_router.include_router(rbac_router, prefix="/rbac", tags=["RBAC"])
