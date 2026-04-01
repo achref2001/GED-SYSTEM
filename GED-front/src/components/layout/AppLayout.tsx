@@ -22,6 +22,7 @@ const navItems = [
   { to: '/favorites', icon: Star, label: 'Favorites' },
   { to: '/recent', icon: Clock, label: 'Recently Viewed' },
   { to: '/templates', icon: FileStack, label: 'Templates' },
+  { to: '/settings/tags', icon: TagIcon, label: 'Tags' },
 ]
 
 const adminItems = [
