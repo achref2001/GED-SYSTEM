@@ -78,8 +78,8 @@ async def update_favorite_note(
     await db.refresh(fav)
     return success_response(fav)
 
-@router.get("/check/{document_id}", response_model=APIResponse[FavoriteCheckResponse])
-async def check_favorite(
+@router.get("/check/documents/{document_id}", response_model=APIResponse[FavoriteCheckResponse])
+async def check_document_favorite(
     document_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -88,6 +88,23 @@ async def check_favorite(
     from sqlalchemy import select
     
     query = select(UserFavorite).filter(UserFavorite.user_id == current_user.id, UserFavorite.document_id == document_id)
+    res = await db.execute(query)
+    fav = res.scalars().first()
+    
+    if fav:
+        return success_response(FavoriteCheckResponse(is_favorite=True, note=fav.note, added_at=fav.added_at))
+    return success_response(FavoriteCheckResponse(is_favorite=False))
+
+@router.get("/check/folders/{folder_id}", response_model=APIResponse[FavoriteCheckResponse])
+async def check_folder_favorite(
+    folder_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.models.user_favorite import UserFavorite
+    from sqlalchemy import select
+    
+    query = select(UserFavorite).filter(UserFavorite.user_id == current_user.id, UserFavorite.folder_id == folder_id)
     res = await db.execute(query)
     fav = res.scalars().first()
     

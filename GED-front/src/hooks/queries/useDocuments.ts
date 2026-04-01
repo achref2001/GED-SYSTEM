@@ -6,13 +6,31 @@ export function useDocuments(params: DocumentListParams) {
     queryKey: ['documents', params],
     queryFn: () => documentsApi.list(params),
     staleTime: 30_000,
-    select: (res) => ({
-      items: res.data.data?.filter(doc => 
-        params.selectedTags?.length === 0 || 
-        doc.tags?.some(tag => params.selectedTags.includes(tag.name))
-      ) || [],
-      pagination: res.data.pagination
-    })
+    select: (res) => {
+      let items = res.data.data || []
+      
+      // Filter by Tags
+      if (params.selectedTags && params.selectedTags.length > 0) {
+        items = items.filter(doc => 
+          doc.tags?.some(tag => params.selectedTags?.includes(tag.name))
+        )
+      }
+
+      // Filter by Search Query (Case Insensitive)
+      if (params.q) {
+        const query = params.q.toLowerCase()
+        items = items.filter(doc => 
+          doc.name.toLowerCase().includes(query) ||
+          doc.tags?.some(tag => tag.name.toLowerCase().includes(query)) ||
+          doc.file_type.toLowerCase().includes(query)
+        )
+      }
+
+      return {
+        items,
+        pagination: res.data.pagination
+      }
+    }
   })
 }
 

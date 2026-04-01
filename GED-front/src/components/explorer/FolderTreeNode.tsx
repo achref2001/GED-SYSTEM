@@ -6,6 +6,7 @@ import { useUploadStore } from '../../stores/uploadStore'
 import { cn } from '../../lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/button'
+import { FavoriteStar } from '../document/FavoriteStar'
 
 interface FolderTreeNodeProps {
   node: FolderTree
@@ -70,15 +71,22 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
           {node.name}
         </span>
         
-        <Button
-          onClick={handleUpload}
-          size="sm"
-          variant="ghost"
-          className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 hover:bg-blue-50 hover:text-blue-600"
-          title="Upload to this folder"
-        >
-          <Upload size={14} />
-        </Button>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <FavoriteStar 
+            folderId={node.id} 
+            size="sm" 
+            showTooltip={false} 
+          />
+          <Button
+            onClick={handleUpload}
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0 hover:bg-blue-50 hover:text-blue-600"
+            title="Upload to this folder"
+          >
+            <Upload size={14} />
+          </Button>
+        </div>
       </div>
 
       <AnimatePresence>

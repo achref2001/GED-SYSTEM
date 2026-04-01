@@ -13,6 +13,7 @@ import TemplatesPage from "@/pages/templates/TemplatesPage";
 import SearchPage from "@/pages/SearchPage";
 import AdminPage from "@/pages/AdminPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
+import TagsPage from "@/pages/settings/TagsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/recent" element={<RecentlyViewedPage />} />
             <Route path="/templates" element={<TemplatesPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/settings/tags" element={<TagsPage />} />
             <Route
               path="/admin"
               element={

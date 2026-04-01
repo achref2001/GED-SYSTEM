@@ -19,6 +19,26 @@ export const documentsApi = {
   get: (id: number) =>
     api.get<ApiResponse<Document>>(`/documents/${id}`),
 
+  download: async (id: number, filename: string) => {
+    const response = await api.get(`/documents/${id}/download`, { responseType: 'blob' })
+    const url = URL.createObjectURL(new Blob([response.data]))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
+
+  open: async (id: number) => {
+    const response = await api.get(`/documents/${id}/download`, { responseType: 'blob' })
+    const type = response.data.type || 'application/octet-stream'
+    const url = URL.createObjectURL(new Blob([response.data], { type }))
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 15000)
+  },
+
   upload: (
     formData: FormData, 
     force = false,

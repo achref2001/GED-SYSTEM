@@ -39,6 +39,11 @@ export const favoritesApi = {
 
   checkDocument: (id: number) =>
     api.get<ApiResponse<FavoriteCheckResponse>>(
-      `/favorites/check/${id}`
+      `/favorites/check/documents/${id}`
+    ),
+
+  checkFolder: (id: number) =>
+    api.get<ApiResponse<FavoriteCheckResponse>>(
+      `/favorites/check/folders/${id}`
     ),
 }

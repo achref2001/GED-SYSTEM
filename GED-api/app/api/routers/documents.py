@@ -81,13 +81,41 @@ async def list_documents(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Simple query first to test
+        # Build query
         query = select(Document).where(Document.is_deleted == False)
-        if folder_id is not None:
+        
+        # If 'q' is provided, perform global search across all folders
+        if q:
+            search_query = f"%{q}%"
+            # Search in name, description
+            # We use selectinload(Document.tags) later, but for filtering by tags we need a join
+            query = query.join(Document.tags, isouter=True).where(
+                or_(
+                    Document.name.ilike(search_query),
+                    Document.description.ilike(search_query),
+                    Tag.name.ilike(search_query)
+                )
+            ).distinct()
+        elif folder_id is not None:
+            # If no 'q', restrict to folder if specified
             query = query.where(Document.folder_id == folder_id)
         
-        # Get total count
-        count_result = await db.execute(select(Document).where(Document.is_deleted == False))
+        # Get total count (for pagination)
+        # Note: This count may be slightly complex with joins, so we count the filtered base query
+        count_query = select(Document).where(Document.is_deleted == False)
+        if q:
+            search_query = f"%{q}%"
+            count_query = count_query.join(Document.tags, isouter=True).where(
+                or_(
+                    Document.name.ilike(search_query),
+                    Document.description.ilike(search_query),
+                    Tag.name.ilike(search_query)
+                )
+            ).distinct()
+        elif folder_id is not None:
+            count_query = count_query.where(Document.folder_id == folder_id)
+            
+        count_result = await db.execute(count_query)
         total = len(list(count_result.scalars().all()))
         
         # Get documents with pagination

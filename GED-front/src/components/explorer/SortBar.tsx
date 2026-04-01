@@ -3,10 +3,28 @@ import { ArrowUpDown, ChevronDown, Filter, LayoutGrid, LayoutList, SortAsc, Sort
 import { useExplorerStore } from '../../stores/explorerStore'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '../ui/dropdown-menu'
+import { useQuery } from '@tanstack/react-query'
+import { tagsApi } from '../../services/api/tags'
+import { Check, Hash, Loader2 } from 'lucide-react'
 
 export function SortBar() {
-  const { sortBy, sortOrder, setSortBy, toggleSortOrder } = useExplorerStore()
+  const { sortBy, sortOrder, setSortBy, toggleSortOrder, selectedTags, setSelectedTags } = useExplorerStore()
+
+  const { data: tagsResponse, isLoading: isLoadingTags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => tagsApi.list()
+  })
+
+  const allTags = tagsResponse?.data?.data || []
+
+  const toggleTag = (tagName: string) => {
+    if (selectedTags.includes(tagName)) {
+      setSelectedTags(selectedTags.filter(t => t !== tagName))
+    } else {
+      setSelectedTags([...selectedTags, tagName])
+    }
+  }
 
   const sortItems = [
     { label: 'Asset Name', value: 'name', icon: Database },
@@ -63,18 +81,87 @@ export function SortBar() {
         </button>
       </div>
 
-      <div className="flex items-center gap-4 bg-slate-100/30 p-2 rounded-2xl border border-slate-100/50 shadow-inner group transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-         <div className="flex items-center gap-1 px-3 border-r border-slate-100/50">
-            <Tags size={14} className="text-slate-400 stroke-[2.5] italic" />
-         </div>
-         <div className="flex gap-1.5 px-1 overflow-x-auto max-w-sm scrollbar-none">
-            {['Validated', 'Draft', 'Expired', 'Archived'].map(filter => (
-               <button key={filter} className="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-white hover:text-blue-600 transition-all border border-transparent hover:border-slate-100">{filter}</button>
-            ))}
-         </div>
-         <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white group-hover:text-blue-600 transition-all font-bold">
-            <Filter size={14} className="stroke-[3]" />
-         </Button>
+      <div className="flex items-center gap-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-4 px-6 py-3 rounded-2xl border transition-all active:scale-95 group",
+              selectedTags.length > 0 
+                ? "bg-indigo-600 border-indigo-500 text-white shadow-xl shadow-indigo-600/20" 
+                : "bg-white border-slate-100 text-slate-500 hover:bg-slate-50 shadow-xl shadow-slate-200/50"
+            )}>
+              <div className={cn(
+                "w-8 h-8 rounded-xl flex items-center justify-center transition-all group-hover:rotate-12",
+                selectedTags.length > 0 ? "bg-white/20" : "bg-indigo-50 text-indigo-600"
+              )}>
+                <Filter size={14} className="stroke-[3]" />
+              </div>
+              <div className="flex flex-col items-start text-left min-w-[100px]">
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-widest leading-none mb-1",
+                  selectedTags.length > 0 ? "text-indigo-200" : "text-slate-400"
+                )}>
+                  {selectedTags.length === 0 ? "Filter Tags" : `${selectedTags.length} Active Filters`}
+                </span>
+                <span className="text-xs font-black truncate max-w-[120px]">
+                  {selectedTags.length === 0 ? "None Selected" : selectedTags.join(', ')}
+                </span>
+              </div>
+              <ChevronDown size={12} className={cn("stroke-[4]", selectedTags.length > 0 ? "text-indigo-200" : "text-slate-300")} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="rounded-[2rem] border-slate-100 shadow-2xl p-4 w-72 animate-in slide-in-from-top-4 duration-500 font-sans glass">
+            <DropdownMenuLabel className="px-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Filter by Tag Category</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-slate-100/50 my-2" />
+            
+            <div className="max-h-60 overflow-y-auto scrollbar-premium pr-1 space-y-1">
+              {isLoadingTags ? (
+                <div className="flex items-center justify-center py-8 gap-3">
+                  <Loader2 size={16} className="text-indigo-500 animate-spin" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing Tags...</span>
+                </div>
+              ) : allTags.length === 0 ? (
+                <div className="py-8 px-2 text-center text-slate-400">
+                  <p className="text-[10px] font-bold uppercase tracking-widest">No tags defined</p>
+                </div>
+              ) : (
+                allTags.map((tag) => {
+                  const isSelected = selectedTags.includes(tag.name)
+                  return (
+                    <button
+                      key={tag.id}
+                      onClick={() => toggleTag(tag.name)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all group",
+                        isSelected 
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 
+                          : "hover:bg-indigo-50 text-slate-600 hover:text-indigo-600"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Hash size={12} className={cn("transition-colors", isSelected ? "text-indigo-200" : "text-slate-400 group-hover:text-indigo-400")} />
+                        <span className="text-[11px] font-bold uppercase tracking-widest">{tag.name}</span>
+                      </div>
+                      {isSelected && <Check size={14} className="stroke-[3]" />}
+                    </button>
+                  )
+                })
+              )}
+            </div>
+
+            {selectedTags.length > 0 && (
+              <>
+                <DropdownMenuSeparator className="bg-slate-100/50 my-3" />
+                <button 
+                  onClick={() => setSelectedTags([])}
+                  className="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all"
+                >
+                  Clear All Filters
+                </button>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

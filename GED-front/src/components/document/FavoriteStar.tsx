@@ -1,38 +1,50 @@
 import React from 'react'
 import { Star } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { useFavoriteCheck } from '../../hooks/queries/useFavorites'
-import { useToggleFavorite } from '../../hooks/mutations/useFavoriteMutation'
+import { useFavoriteCheck, useFolderFavoriteCheck } from '../../hooks/queries/useFavorites'
+import { useToggleFavorite, useToggleFolderFavorite } from '../../hooks/mutations/useFavoriteMutation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 interface FavoriteStarProps {
-  documentId: number
+  documentId?: number
+  folderId?: number
   size?: 'sm' | 'md'
   showTooltip?: boolean
 }
 
 export function FavoriteStar({ 
   documentId, 
+  folderId,
   size = 'md',
   showTooltip = true 
 }: FavoriteStarProps) {
-  const { data } = useFavoriteCheck(documentId)
-  const { add, remove } = useToggleFavorite()
-  const isFavorite = data?.is_favorite ?? false
+  const isFolder = !!folderId
+  const activeId = (isFolder ? folderId : documentId) as number
+
+  const { data: docData } = useFavoriteCheck(documentId || 0)
+  const { data: folderData } = useFolderFavoriteCheck(folderId || 0)
+  
+  const { add: addDoc, remove: removeDoc } = useToggleFavorite()
+  const { add: addFolder, remove: removeFolder } = useToggleFolderFavorite()
+
+  const isFavorite = isFolder ? (folderData?.is_favorite ?? false) : (docData?.is_favorite ?? false)
+  const isPending = isFolder 
+    ? (addFolder.isPending || removeFolder.isPending)
+    : (addDoc.isPending || removeDoc.isPending)
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isFavorite) {
-      remove.mutate(documentId)
+      isFolder ? removeFolder.mutate(activeId) : removeDoc.mutate(activeId)
     } else {
-      add.mutate({ id: documentId })
+      isFolder ? addFolder.mutate({ id: activeId }) : addDoc.mutate({ id: activeId })
     }
   }
 
   const icon = (
     <button
       onClick={handleClick}
-      disabled={add.isPending || remove.isPending}
+      disabled={isPending}
       className={cn(
         'rounded-full transition-all duration-150 hover:scale-110',
         size === 'sm' ? 'p-1' : 'p-1.5',

@@ -4,9 +4,11 @@ import { FolderIcon, ExternalLink, Trash2 } from 'lucide-react'
 import { useExplorerStore } from '../../stores/explorerStore'
 import { Button } from '../ui/button'
 import { useToggleFolderFavorite } from '../../hooks/mutations/useFavoriteMutation'
+import { useNavigate } from 'react-router-dom'
 
 export function FavoriteFolderRow({ favorite }: { favorite: Favorite }) {
   const { setCurrentFolder } = useExplorerStore()
+  const navigate = useNavigate()
   const { remove } = useToggleFolderFavorite()
   const folder = favorite.folder
 
@@ -31,7 +33,10 @@ export function FavoriteFolderRow({ favorite }: { favorite: Favorite }) {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => setCurrentFolder(folder.id)}
+          onClick={() => {
+            setCurrentFolder(folder.id)
+            navigate('/explorer')
+          }}
         >
           <ExternalLink className="w-4 h-4 mr-2" />
           Go to Folder

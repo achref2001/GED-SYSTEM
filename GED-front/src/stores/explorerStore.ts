@@ -9,6 +9,7 @@ interface ExplorerState {
   sortOrder: 'asc' | 'desc'
   isDetailPanelOpen: boolean
   selectedTags: string[]
+  searchQuery: string
 
   // Actions
   setCurrentFolder: (id: number | null) => void
@@ -22,6 +23,7 @@ interface ExplorerState {
   setSortBy: (sort: 'name' | 'date' | 'size' | 'type') => void
   toggleSortOrder: () => void
   setSelectedTags: (tags: string[]) => void
+  setSearchQuery: (query: string) => void
 }
 
 export const useExplorerStore = create<ExplorerState>((set, get) => ({
@@ -33,6 +35,7 @@ export const useExplorerStore = create<ExplorerState>((set, get) => ({
   sortOrder: 'asc',
   isDetailPanelOpen: false,
   selectedTags: [],
+  searchQuery: '',
 
   setCurrentFolder: (id) => set({ currentFolderId: id, selectedDocumentIds: new Set() }),
   setViewMode: (mode) => set({ viewMode: mode }),
@@ -59,4 +62,6 @@ export const useExplorerStore = create<ExplorerState>((set, get) => ({
   closeDetailPanel: () => set({ isDetailPanelOpen: false }),
   setSortBy: (sort) => set({ sortBy: sort }),
   toggleSortOrder: () => set((state) => ({ sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc' })),
+  setSelectedTags: (tags: string[]) => set({ selectedTags: tags }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
 }))

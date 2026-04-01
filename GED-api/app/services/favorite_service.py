@@ -29,7 +29,7 @@ class FavoriteService:
         db.add(favorite)
         
         # Audit
-        db.add(AuditLog(user_id=user_id, action="ADD_FAVORITE", document_id=document_id))
+        db.add(AuditLog(user_id=user_id, action="ADD_FAVORITE", document_id=document_id, folder_id=folder_id))
         
         await db.commit()
         
@@ -52,7 +52,7 @@ class FavoriteService:
             query = query.filter(UserFavorite.folder_id == folder_id)
             
         await db.execute(query)
-        db.add(AuditLog(user_id=user_id, action="REMOVE_FAVORITE", document_id=document_id))
+        db.add(AuditLog(user_id=user_id, action="REMOVE_FAVORITE", document_id=document_id, folder_id=folder_id))
         await db.commit()
 
     @staticmethod

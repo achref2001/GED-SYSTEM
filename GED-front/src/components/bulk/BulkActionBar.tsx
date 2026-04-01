@@ -3,17 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useExplorerStore } from '../../stores/explorerStore'
 import { 
   X, Move, Trash2, Download, Tags, 
-  CheckCircle2, AlertCircle, FileStack 
+  CheckCircle2, AlertCircle, FileStack, Loader2
 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { useBulkMutation } from '../../hooks/mutations/useBulkMutation'
 import { documentsApi } from '../../services/api/documents'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { TagSelector } from '../shared/TagSelector'
+import { Badge } from '../ui/badge'
+import { toast } from 'sonner'
+import { cn } from '../../lib/utils'
 
 export function BulkActionBar() {
   const { selectedDocumentIds, clearSelection } = useExplorerStore()
   const hasSelection = selectedDocumentIds.size > 0
   const selectedIdsArray = Array.from(selectedDocumentIds)
-  const { bulkDelete } = useBulkMutation()
+  const [selectedTagsToApply, setSelectedTagsToApply] = React.useState<string[]>([])
+  const { bulkDelete, bulkTag } = useBulkMutation()
 
   const handleDownload = () => {
     documentsApi.bulkDownload(selectedIdsArray)
@@ -25,6 +31,25 @@ export function BulkActionBar() {
             onSuccess: () => clearSelection()
         })
     }
+  }
+
+  const handleApplyTags = () => {
+    if (selectedTagsToApply.length === 0) {
+      toast.error('No tags selected')
+      return
+    }
+    bulkTag.mutate({ ids: selectedIdsArray, add: selectedTagsToApply, remove: [] }, {
+      onSuccess: () => {
+        clearSelection()
+        setSelectedTagsToApply([])
+      }
+    })
+  }
+
+  const toggleTag = (tagName: string) => {
+    setSelectedTagsToApply(prev => 
+      prev.includes(tagName) ? prev.filter(t => t !== tagName) : [...prev, tagName]
+    )
   }
 
   return (
@@ -71,13 +96,36 @@ export function BulkActionBar() {
                    <span>Relocate</span>
                 </Button>
 
-                <Button 
-                   variant="ghost" 
-                   className="h-14 px-5 rounded-2xl text-white/50 hover:text-white font-black uppercase tracking-widest text-[9px] hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-1 group"
-                >
-                   <Tags size={14} className="group-hover:rotate-12 transition-transform stroke-[3]" />
-                   <span>Edit Tags</span>
-                </Button>
+                 <Popover>
+                   <PopoverTrigger asChild>
+                    <Button 
+                        variant="ghost" 
+                        className={cn(
+                          "h-14 px-5 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-1 group",
+                          selectedTagsToApply.length > 0 ? "text-indigo-400" : "text-white/50 hover:text-white"
+                        )}
+                    >
+                        <Tags size={14} className="group-hover:rotate-12 transition-transform stroke-[3]" />
+                        <span>{selectedTagsToApply.length > 0 ? `${selectedTagsToApply.length} Tags` : 'Edit Tags'}</span>
+                    </Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="p-0 border-none bg-transparent shadow-none w-auto" align="end" sideOffset={15}>
+                      <TagSelector 
+                        selectedTagNames={selectedTagsToApply} 
+                        onToggle={toggleTag}
+                        onClose={() => {}}
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <Button 
+                          onClick={handleApplyTags}
+                          disabled={bulkTag.isPending || selectedTagsToApply.length === 0}
+                          className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-500/20"
+                        >
+                          {bulkTag.isPending ? <Loader2 size={14} className="animate-spin" /> : `Apply to ${selectedDocumentIds.size} Files`}
+                        </Button>
+                      </div>
+                   </PopoverContent>
+                 </Popover>
 
                 <div className="w-px h-10 bg-white/10 mx-2" />
 
