@@ -10,6 +10,26 @@ storage_service = StorageService()
 
 class DocumentService:
     @staticmethod
+    async def _build_folder_segments(db: AsyncSession, folder_id: Optional[int]) -> list[str]:
+        """Build nested folder path segments for storage from DB hierarchy."""
+        if folder_id is None:
+            return []
+
+        from sqlalchemy import select
+        from app.models.folder import Folder
+
+        segments: list[str] = []
+        current_id = folder_id
+        while current_id:
+            result = await db.execute(select(Folder).where(Folder.id == current_id))
+            folder = result.scalars().first()
+            if not folder:
+                break
+            segments.insert(0, folder.name)
+            current_id = folder.parent_id
+        return segments
+
+    @staticmethod
     async def compute_file_hash(file: UploadFile) -> str:
         import hashlib
         h = hashlib.sha256()
@@ -30,6 +50,7 @@ class DocumentService:
     @staticmethod
     async def upload_document(db: AsyncSession, file: UploadFile, folder_id: Optional[int], user_id: int, force: bool = False) -> Document:
         file_hash = await DocumentService.compute_file_hash(file)
+        folder_segments = await DocumentService._build_folder_segments(db, folder_id)
         
         existing_doc = await DocumentService.check_duplicate(db, file_hash)
         if existing_doc:
@@ -42,7 +63,7 @@ class DocumentService:
                 )
             else:
                 # If force=True, create new version linked to existing doc
-                file_path = await storage_service.upload_file(file)
+                file_path = await storage_service.upload_file(file, folder_segments=folder_segments)
                 existing_doc.current_version += 1
                 
                 version = DocumentVersion(
@@ -58,7 +79,7 @@ class DocumentService:
                 await db.refresh(existing_doc)
                 return existing_doc
 
-        file_path = await storage_service.upload_file(file)
+        file_path = await storage_service.upload_file(file, folder_segments=folder_segments)
         
         file_size = file.size if file.size else 1024 
         

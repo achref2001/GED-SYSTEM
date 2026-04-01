@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { 
-  X, Info, History, Tags, ShieldCheck, 
-  Download, Archive, Trash2, Calendar, 
-  Lock, Unlock, ExternalLink, RefreshCw 
+  X, Info, History, Tags,
+  Download, Archive, Trash2,
+  ExternalLink, RefreshCw 
 } from 'lucide-react'
 import { useDocumentDetails, useDocumentVersions } from '../../hooks/queries/useDocuments'
 import { useExplorerStore } from '../../stores/explorerStore'
@@ -13,12 +13,16 @@ import { FavoriteStar } from './FavoriteStar'
 import { LockStatusSection } from './LockStatusSection'
 import { cn } from '../../lib/utils'
 import { format } from 'date-fns'
+import { TagSelector } from '../shared/TagSelector'
+import { useBulkMutation } from '../../hooks/mutations/useBulkMutation'
+import { toast } from 'sonner'
 
 export function DocumentDetailPanel({ documentId }: { documentId: number }) {
   const { closeDetailPanel } = useExplorerStore()
   const { data: doc, isLoading } = useDocumentDetails(documentId)
   const { data: versions } = useDocumentVersions(documentId)
   const [activeTab, setActiveTab] = useState('info')
+  const { bulkTag } = useBulkMutation()
 
   if (isLoading) {
     return (
@@ -39,6 +43,26 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
         <p className="text-sm text-slate-500 mb-6">The document you're looking for doesn't exist or is inaccessible.</p>
         <Button variant="outline" onClick={closeDetailPanel}>Close Panel</Button>
       </div>
+    )
+  }
+
+  const selectedTagNames = (doc.tags || []).map((tag: any) =>
+    typeof tag === 'string' ? tag : tag?.name
+  ).filter(Boolean)
+
+  const handleToggleTag = (tagName: string) => {
+    const isSelected = selectedTagNames.includes(tagName)
+    bulkTag.mutate(
+      {
+        ids: [doc.id],
+        add: isSelected ? [] : [tagName],
+        remove: isSelected ? [tagName] : []
+      },
+      {
+        onSuccess: () => {
+          toast.success(`${isSelected ? 'Removed' : 'Added'} tag ${tagName}`)
+        }
+      }
     )
   }
 
@@ -179,16 +203,26 @@ export function DocumentDetailPanel({ documentId }: { documentId: number }) {
 
             <TabsContent value="metadata" className="mt-0">
                <div className="space-y-6">
-                  {doc.tags?.length > 0 && (
-                    <div>
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Tags</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {doc.tags.map(tag => (
-                          <span key={tag} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all cursor-default">#{tag}</span>
-                        ))}
-                      </div>
+                  <div>
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Tags</h4>
+                    <div className="space-y-4">
+                      {selectedTagNames.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedTagNames.map((tagName) => (
+                            <span key={tagName} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-semibold border border-indigo-100">
+                              #{tagName}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No tags assigned.</p>
+                      )}
+                      <TagSelector
+                        selectedTagNames={selectedTagNames}
+                        onToggle={handleToggleTag}
+                      />
                     </div>
-                  )}
+                  </div>
 
                   <div>
                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-50 pb-2">Technical Metadata</h4>

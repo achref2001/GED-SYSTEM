@@ -4,7 +4,6 @@ import { ChevronRight, ChevronDown, Folder, FolderOpen, Upload } from 'lucide-re
 import { useExplorerStore } from '../../stores/explorerStore'
 import { useUploadStore } from '../../stores/uploadStore'
 import { cn } from '../../lib/utils'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/button'
 import { FavoriteStar } from '../document/FavoriteStar'
 
@@ -41,11 +40,10 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
     <div className="select-none">
       <div 
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer group transition-all duration-200",
+          "flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer group transition-all duration-150",
           isActive 
-            ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100" 
-            : "hover:bg-slate-100 text-slate-600 hover:text-slate-900",
-          level > 0 && `ml-${level * 4}`
+            ? "bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100" 
+            : "hover:bg-slate-100/80 text-slate-600 hover:text-slate-900"
         )}
         style={{ paddingLeft: `${(level * 16) + 12}px` }}
         onClick={handleClick}
@@ -62,7 +60,7 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
         
         <div className={cn(
             "flex-shrink-0 transition-colors",
-            isActive ? "text-blue-500" : "text-slate-400 group-hover:text-amber-500"
+            isActive ? "text-indigo-500" : "text-slate-400 group-hover:text-indigo-500"
         )}>
             {isOpen ? <FolderOpen size={18} fill="currentColor" fillOpacity={0.2} /> : <Folder size={18} fill="currentColor" fillOpacity={0.2} />}
         </div>
@@ -89,20 +87,13 @@ export function FolderTreeNode({ node, level = 0 }: FolderTreeNodeProps) {
         </div>
       </div>
 
-      <AnimatePresence>
-        {isOpen && hasChildren && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            {node.subfolders.map(child => (
-              <FolderTreeNode key={child.id} node={child} level={level + 1} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isOpen && hasChildren && (
+        <div className="overflow-hidden">
+          {node.subfolders.map(child => (
+            <FolderTreeNode key={child.id} node={child} level={level + 1} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

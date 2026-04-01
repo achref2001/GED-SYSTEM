@@ -94,10 +94,10 @@ export function FolderTree() {
 
   return (
     <div className="space-y-1">
-      <div className="p-2">
+      <div className="p-2 sticky top-0 z-10 bg-white/80 backdrop-blur-xl rounded-xl">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-slate-600 hover:text-slate-900">
+            <Button variant="ghost" size="sm" className="w-full justify-start text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/80 rounded-xl">
               <Plus className="w-4 h-4 mr-2" />
               New Folder
             </Button>

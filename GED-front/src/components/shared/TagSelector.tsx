@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface TagSelectorProps {
   selectedTagNames: string[]
   onToggle: (tagName: string) => void
-  onClose: () => void
+  onClose?: () => void
 }
 
 export function TagSelector({ selectedTagNames, onToggle, onClose }: TagSelectorProps) {
@@ -85,7 +85,9 @@ export function TagSelector({ selectedTagNames, onToggle, onClose }: TagSelector
       {/* Footer */}
       <div className="p-3 border-t border-white/5 bg-slate-950/50 flex items-center justify-between">
          <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{selectedTagNames.length} SELECTED</span>
-         <button onClick={onClose} className="text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors">Done</button>
+         {onClose && (
+           <button onClick={onClose} className="text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors">Done</button>
+         )}
       </div>
     </div>
   )

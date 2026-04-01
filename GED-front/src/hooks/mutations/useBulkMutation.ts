@@ -32,6 +32,7 @@ export function useBulkMutation() {
     onSuccess: () => {
       toast.success('Successfully updated tags')
       queryClient.invalidateQueries({ queryKey: ['documents'] })
+      queryClient.invalidateQueries({ queryKey: ['document'] })
     }
   })
 

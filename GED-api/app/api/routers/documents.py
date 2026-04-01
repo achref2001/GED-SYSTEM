@@ -311,6 +311,14 @@ async def bulk_tag(
 ):
     if len(req.document_ids) > 100:
         raise HTTPException(status_code=400, detail="Max bulk size is 100")
+    result = await DocumentService.bulk_tag(
+        db,
+        req.document_ids,
+        req.add_tags,
+        req.remove_tags,
+        current_user.id
+    )
+    return success_response(result)
 from datetime import datetime
 
 @router.patch("/{id}/expiry", response_model=APIResponse[DocumentResponse])

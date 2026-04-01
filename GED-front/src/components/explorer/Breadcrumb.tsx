@@ -10,33 +10,33 @@ export function Breadcrumb() {
   const { data: folder } = useFolderDetails(currentFolderId)
 
   return (
-    <nav className="px-10 py-5 bg-white/40 backdrop-blur-xl flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-400 group border-b border-slate-100/50 sticky top-20 z-10 transition-colors">
-      <div className="flex items-center gap-1.5 p-1 px-2.5 rounded-lg hover:bg-white hover:text-blue-600 transition-all cursor-pointer shadow-sm border border-transparent hover:border-slate-100" onClick={() => setCurrentFolder(null)}>
+    <nav className="w-full px-3 sm:px-4 py-2.5 bg-white/70 border border-slate-100/80 rounded-2xl flex items-center gap-2 text-[11px] font-semibold text-slate-500 overflow-x-auto scrollbar-premium">
+      <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-colors cursor-pointer border border-transparent" onClick={() => setCurrentFolder(null)}>
         <Home size={14} className="stroke-[2.5]" />
-        <span className="hidden sm:inline-block">Root Directory</span>
+        <span className="whitespace-nowrap">Root</span>
       </div>
 
       {breadcrumb?.map((item, index) => (
         <React.Fragment key={item.id}>
-           <ChevronRight size={14} className="stroke-[3] text-slate-200 group-hover:text-blue-500/30 transition-colors mr-1" />
+           <ChevronRight size={13} className="stroke-[3] text-slate-300 shrink-0" />
            <div 
              className={cn(
-               "flex items-center p-1 px-2.5 rounded-lg transition-all cursor-pointer border border-transparent",
+               "shrink-0 flex items-center px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer border border-transparent",
                item.id === currentFolderId 
-                 ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20 scale-105 border-blue-600" 
-                 : "hover:bg-white hover:text-blue-600 hover:border-slate-100 hover:shadow-sm"
+                 ? "bg-indigo-600 text-white border-indigo-600" 
+                 : "hover:bg-slate-100 hover:text-indigo-600"
              )}
              onClick={() => setCurrentFolder(item.id)}
            >
-             <span className="truncate max-w-[150px]">{item.name}</span>
+             <span className="truncate max-w-[180px]">{item.name}</span>
            </div>
         </React.Fragment>
       ))}
 
       {breadcrumb?.length === 0 && currentFolderId !== null && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-slate-100 animate-in slide-in-from-left-2 duration-300">
-             <ChevronRight size={14} className="text-blue-500 stroke-[3]" />
-             <span className="text-blue-600 font-black italic">{folder?.name || 'Syncing Node...'}</span>
+          <div className="shrink-0 flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
+             <ChevronRight size={13} className="text-indigo-500 stroke-[3]" />
+             <span className="text-indigo-600 font-semibold">{folder?.name || 'Syncing Node...'}</span>
           </div>
       )}
     </nav>

@@ -1,9 +1,8 @@
 import React from 'react'
-import { ArrowUpDown, ChevronDown, Filter, LayoutGrid, LayoutList, SortAsc, SortDesc, Database, Tags, Calendar, FileType } from 'lucide-react'
+import { ArrowUpDown, ChevronDown, Filter, SortAsc, SortDesc, Database, Calendar, FileType } from 'lucide-react'
 import { useExplorerStore } from '../../stores/explorerStore'
 import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '../ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useQuery } from '@tanstack/react-query'
 import { tagsApi } from '../../services/api/tags'
 import { Check, Hash, Loader2 } from 'lucide-react'
@@ -36,32 +35,32 @@ export function SortBar() {
   const activeSort = sortItems.find(i => i.value === sortBy) || sortItems[0]
 
   return (
-    <div className="px-12 py-6 bg-white/40 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between sticky top-[136px] z-10 transition-colors">
-      <div className="flex items-center gap-10">
+    <div className="w-full lg:w-auto px-2 sm:px-3 py-2 bg-white/70 border border-slate-100/80 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:bg-slate-50 transition-all active:scale-95 group group-active:shadow-blue-500/10">
-               <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center transition-all group-hover:rotate-12">
+            <button className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white border border-slate-100 shadow-sm hover:bg-slate-50 transition-colors group min-w-[185px]">
+               <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                   <ArrowUpDown size={14} className="stroke-[3]" />
                </div>
-               <div className="flex flex-col items-start min-w-[120px]">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Sort Repository</span>
-                  <span className="text-xs font-black text-slate-800 flex items-center gap-2 group-hover:text-blue-600 transition-colors">
+               <div className="flex flex-col items-start min-w-[110px]">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">Sort</span>
+                  <span className="text-xs font-semibold text-slate-800 flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
                      {activeSort.label}
-                     <ChevronDown size={12} className="text-slate-300 group-hover:text-blue-500 stroke-[4]" />
+                     <ChevronDown size={12} className="text-slate-300 group-hover:text-indigo-500 stroke-[4]" />
                   </span>
                </div>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="rounded-2xl border-slate-100 shadow-2xl p-2 w-64 animate-in slide-in-from-top-4 duration-500 font-sans">
+          <DropdownMenuContent className="rounded-2xl border-slate-100 shadow-2xl p-2 w-64 animate-in slide-in-from-top-4 duration-200 font-sans">
              <DropdownMenuLabel className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Select sorting criterion</DropdownMenuLabel>
              <DropdownMenuSeparator className="bg-slate-50" />
              {sortItems.map((item) => (
                 <DropdownMenuItem 
                   key={item.value}
                   className={cn(
-                    "rounded-xl h-12 px-4 cursor-pointer font-bold text-[10px] uppercase tracking-widest transition-all mb-1",
-                    sortBy === item.value ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20" : "hover:bg-slate-50 hover:text-blue-600"
+                    "rounded-xl h-11 px-4 cursor-pointer font-bold text-[10px] uppercase tracking-widest transition-all mb-1",
+                    sortBy === item.value ? "bg-indigo-600 text-white shadow-sm" : "hover:bg-slate-50 hover:text-indigo-600"
                   )}
                   onClick={() => setSortBy(item.value as any)}
                 >
@@ -74,43 +73,43 @@ export function SortBar() {
 
         <button 
           onClick={toggleSortOrder}
-          className="h-14 w-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-100 shadow-xl shadow-slate-200/50 hover:shadow-blue-500/10 transition-all active:scale-90 group"
+          className="h-10 w-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-100 shadow-sm transition-colors group"
           title={sortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
         >
-          {sortOrder === 'asc' ? <SortAsc size={20} className="stroke-[3]" /> : <SortDesc size={20} className="stroke-[3]" />}
+          {sortOrder === 'asc' ? <SortAsc size={18} className="stroke-[3]" /> : <SortDesc size={18} className="stroke-[3]" />}
         </button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 self-start sm:self-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={cn(
-              "flex items-center gap-4 px-6 py-3 rounded-2xl border transition-all active:scale-95 group",
+              "flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors group min-w-[210px]",
               selectedTags.length > 0 
-                ? "bg-indigo-600 border-indigo-500 text-white shadow-xl shadow-indigo-600/20" 
-                : "bg-white border-slate-100 text-slate-500 hover:bg-slate-50 shadow-xl shadow-slate-200/50"
+                ? "bg-indigo-600 border-indigo-500 text-white shadow-sm" 
+                : "bg-white border-slate-100 text-slate-500 hover:bg-slate-50 shadow-sm"
             )}>
               <div className={cn(
-                "w-8 h-8 rounded-xl flex items-center justify-center transition-all group-hover:rotate-12",
+                "w-7 h-7 rounded-lg flex items-center justify-center",
                 selectedTags.length > 0 ? "bg-white/20" : "bg-indigo-50 text-indigo-600"
               )}>
                 <Filter size={14} className="stroke-[3]" />
               </div>
-              <div className="flex flex-col items-start text-left min-w-[100px]">
+              <div className="flex flex-col items-start text-left min-w-[90px] max-w-[145px]">
                 <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest leading-none mb-1",
+                  "text-[10px] font-semibold uppercase tracking-widest leading-none mb-1",
                   selectedTags.length > 0 ? "text-indigo-200" : "text-slate-400"
                 )}>
                   {selectedTags.length === 0 ? "Filter Tags" : `${selectedTags.length} Active Filters`}
                 </span>
-                <span className="text-xs font-black truncate max-w-[120px]">
+                <span className="text-xs font-semibold truncate max-w-[120px]">
                   {selectedTags.length === 0 ? "None Selected" : selectedTags.join(', ')}
                 </span>
               </div>
               <ChevronDown size={12} className={cn("stroke-[4]", selectedTags.length > 0 ? "text-indigo-200" : "text-slate-300")} />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="rounded-[2rem] border-slate-100 shadow-2xl p-4 w-72 animate-in slide-in-from-top-4 duration-500 font-sans glass">
+            <DropdownMenuContent className="rounded-[1.25rem] border-slate-100 shadow-2xl p-3 w-[19rem] animate-in slide-in-from-top-4 duration-200 font-sans glass">
             <DropdownMenuLabel className="px-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Filter by Tag Category</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-slate-100/50 my-2" />
             
@@ -132,9 +131,9 @@ export function SortBar() {
                       key={tag.id}
                       onClick={() => toggleTag(tag.name)}
                       className={cn(
-                        "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all group",
+                        "w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-colors group",
                         isSelected 
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 
+                          ? "bg-indigo-600 text-white shadow-sm" 
                           : "hover:bg-indigo-50 text-slate-600 hover:text-indigo-600"
                       )}
                     >

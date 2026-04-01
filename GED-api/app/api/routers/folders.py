@@ -9,8 +9,10 @@ from app.api.deps import get_current_user
 from app.repositories.folder import folder_repo
 from app.models.folder import Folder
 from sqlalchemy import select
+from app.services.storage import StorageService
 
 router = APIRouter()
+storage_service = StorageService()
 
 @router.post("", response_model=APIResponse[FolderResponse])
 async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -18,6 +20,18 @@ async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_
     db.add(db_folder)
     await db.commit()
     await db.refresh(db_folder)
+
+    # Mirror GED folder structure on disk under LOCAL_STORAGE_PATH (./directories by default)
+    segments: List[str] = [db_folder.name]
+    parent_id = db_folder.parent_id
+    while parent_id:
+        parent = await db.get(Folder, parent_id)
+        if not parent:
+            break
+        segments.insert(0, parent.name)
+        parent_id = parent.parent_id
+    storage_service.ensure_folder_path(segments)
+
     return success_response(db_folder)
 
 from sqlalchemy.orm import selectinload

@@ -4,8 +4,8 @@ import { DocumentRow } from './DocumentRow'
 
 export function DocumentList({ documents }: { documents: Document[] }) {
   return (
-    <div className="bg-white/40 backdrop-blur-3xl border border-slate-100/50 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 transition-all overflow-hidden">
-      <div className="grid grid-cols-12 px-6 py-4 mb-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 italic">
+    <div className="bg-white/60 backdrop-blur-xl border border-slate-100/70 rounded-2xl sm:rounded-[2rem] p-3 sm:p-5 shadow-lg transition-all overflow-hidden">
+      <div className="hidden md:grid grid-cols-12 px-4 sm:px-6 py-3 mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 italic">
          <div className="col-span-6 flex items-center gap-3">
              <div className="w-6 h-6 rounded-lg bg-slate-50 border border-slate-100/50" />
              <span>Asset Identity</span>

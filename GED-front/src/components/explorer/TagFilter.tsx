@@ -30,13 +30,13 @@ export function TagFilter() {
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-2 flex-wrap rounded-2xl border border-slate-100 bg-white/70 p-2">
       {/* Existing Tags */}
       {selectedTags.map((tag) => (
         <Badge
           key={tag}
           variant="secondary"
-          className="gap-1 pr-2 group hover:bg-red-100 transition-colors"
+          className="gap-1 pr-2 group hover:bg-red-100 transition-colors rounded-lg"
         >
           <Tag className="w-3 h-3" />
           <span className="text-xs">{tag}</span>
@@ -57,13 +57,13 @@ export function TagFilter() {
             onChange={(e) => setNewTag(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Enter tag name..."
-            className="h-8 w-32 text-xs"
+            className="h-8 w-32 text-xs rounded-lg"
             autoFocus
           />
           <Button
             onClick={handleAddTag}
             size="sm"
-            className="h-8 px-2"
+            className="h-8 px-2 rounded-lg"
           >
             Add
           </Button>
@@ -74,7 +74,7 @@ export function TagFilter() {
             }}
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 rounded-lg"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -84,7 +84,7 @@ export function TagFilter() {
           onClick={() => setShowNewTagInput(true)}
           size="sm"
           variant="outline"
-          className="h-8 gap-1 text-xs"
+          className="h-8 gap-1 text-xs rounded-lg"
         >
           <Plus className="w-3 h-3" />
           Add Tag

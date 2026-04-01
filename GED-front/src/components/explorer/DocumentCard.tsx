@@ -8,7 +8,6 @@ import { cn } from '../../lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Badge } from '../ui/badge'
-import { motion } from 'framer-motion'
 import { useBulkMutation } from '../../hooks/mutations/useBulkMutation'
 import { TagSelector } from '../shared/TagSelector'
 import {
@@ -42,24 +41,20 @@ export function DocumentCard({ document: doc }: { document: Document }) {
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -8, scale: 1.02 }}
-      transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+    <div 
       className={cn(
-        "group bg-white border border-indigo-50/50 rounded-[2.5rem] p-7 cursor-pointer flex flex-col h-full relative overflow-hidden transition-all duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)]",
+        "group bg-white border border-indigo-50/50 rounded-3xl p-5 sm:p-6 cursor-pointer flex flex-col h-full relative overflow-hidden transition-all duration-200 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.05)]",
         isSelected 
-          ? "border-indigo-500 bg-indigo-50/30 shadow-2xl shadow-indigo-500/10 ring-4 ring-indigo-500/5 rotate-1" 
-          : "hover:shadow-2xl hover:shadow-indigo-500/5 hover:border-indigo-100"
+          ? "border-indigo-500 bg-indigo-50/30 shadow-lg shadow-indigo-500/10 ring-2 ring-indigo-500/10" 
+          : "hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-100"
       )}
       onClick={handleCardClick}
     >
       {/* Selection Overlay */}
-      <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10">
+      <div className="absolute top-5 left-5 right-5 flex justify-between items-start z-10">
          <div 
            className={cn(
-             "w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-500 transform",
+             "w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-200 transform",
              isSelected 
                ? "bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-500/40 scale-110" 
                : "bg-white/90 border-slate-200 opacity-0 group-hover:opacity-100 scale-90 hover:scale-100"
@@ -72,10 +67,10 @@ export function DocumentCard({ document: doc }: { document: Document }) {
       </div>
 
       {/* Main Asset Visualization */}
-      <div className="flex flex-col items-center justify-center py-10 mb-6 relative transition-all h-36">
-         <div className="w-24 h-24 rounded-[2.2rem] bg-gradient-to-tr from-slate-50 to-white border border-indigo-50 shadow-xl flex items-center justify-center p-6 transition-all duration-700 group-hover:rotate-[15deg] group-hover:scale-110 relative z-0">
+      <div className="flex flex-col items-center justify-center py-8 mb-5 relative transition-all h-32">
+         <div className="w-20 h-20 rounded-[1.35rem] bg-gradient-to-tr from-slate-50 to-white border border-indigo-50 shadow-lg flex items-center justify-center p-5 transition-all duration-200 group-hover:scale-105 relative z-0">
             <FileTypeIcon fileType={doc.file_type} size="xl" />
-            <div className="absolute inset-0 bg-indigo-500/5 rounded-[2.2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute inset-0 bg-indigo-500/5 rounded-[1.35rem] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
          </div>
       </div>
 
@@ -109,7 +104,7 @@ export function DocumentCard({ document: doc }: { document: Document }) {
       </div>
 
       {/* Footer Info & Actions */}
-      <footer className="mt-8 pt-6 border-t border-indigo-50/50 flex items-center justify-between opacity-40 group-hover:opacity-100 transition-all duration-500">
+      <footer className="mt-5 pt-4 border-t border-indigo-50/60 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-all duration-200">
          <div className="flex items-center gap-2">
             {doc.is_locked && (
               <div className="w-8 h-8 flex items-center justify-center bg-amber-50 rounded-xl text-amber-500 border border-amber-100 shadow-sm" title={`Locked by ${doc.locked_by_name}`}>
@@ -192,7 +187,7 @@ export function DocumentCard({ document: doc }: { document: Document }) {
             </DropdownMenu>
           </div>
        </footer>
-    </motion.div>
+    </div>
   )
 }
 
