@@ -28,6 +28,11 @@
     "VIEWER": [
       "documents.read",
       "folders.read"
+    ],
+    "GHHC": [
+      "documents.delete",
+      "documents.read",
+      "documents.write"
     ]
   },
   "user_roles": {}

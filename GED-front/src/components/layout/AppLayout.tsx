@@ -196,6 +196,18 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
                 >
                   <div className="py-2 pl-4 space-y-1">
                     <NavLink
+                      to="/settings"
+                      className={({ isActive }) => cn(
+                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group",
+                        isActive
+                          ? "bg-indigo-500/10 text-indigo-600 font-bold"
+                          : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                      )}
+                    >
+                      <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-semibold tracking-wide">Overview</span>
+                    </NavLink>
+                    <NavLink
                       to="/settings/tags"
                       className={({ isActive }) => cn(
                         "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group",

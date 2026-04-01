@@ -13,6 +13,7 @@ import TemplatesPage from "@/pages/templates/TemplatesPage";
 import SearchPage from "@/pages/SearchPage";
 import AdminPage from "@/pages/AdminPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import TagsPage from "@/pages/settings/TagsPage";
 import ExtensionsPage from "@/pages/settings/ExtensionsPage";
 import RbacPage from "@/pages/settings/RbacPage";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/recent" element={<RecentlyViewedPage />} />
             <Route path="/templates" element={<TemplatesPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/tags" element={<TagsPage />} />
             <Route
               path="/settings/extensions"
